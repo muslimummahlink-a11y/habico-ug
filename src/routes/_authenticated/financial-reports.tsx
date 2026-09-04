@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { Download, TrendingUp, TrendingDown, DollarSign, Building2, Landmark, ScrollText, FileText } from "lucide-react";
+import { Download, TrendingUp, TrendingDown, DollarSign, Building2, Landmark, ScrollText, FileText, RotateCcw } from "lucide-react";
 import jsPDF from "jspdf";
 import { toPng } from "html-to-image";
 import { HabicoFinancialReport, buildPropertyReportData } from "@/components/habico-financial-report";
@@ -87,7 +87,7 @@ function FinancialReportsPage() {
     },
   });
 
-  const { data: properties = [] } = useQuery({
+  const { data: properties = [], isLoading: isLoadingProperties } = useQuery({
     queryKey: ["financial-reports-properties"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -219,7 +219,7 @@ const { data: ownerProfiles = [] } = useQuery({
     ? (() => {
         const prop = properties.find((p: any) => p.id === selectedPropertyId);
         if (!prop) return null;
-        const owner = ownerMap.get(prop.owner_id ?? "");
+        const owner = ownerProfiles.find((p: any) => p.id === prop.owner_id);
         if (!owner) return null;
         return buildPropertyReportData({
           property: prop,
