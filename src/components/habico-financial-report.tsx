@@ -203,8 +203,27 @@ export function HabicoFinancialReport({ data }: { data: FinancialReportData }) {
     }
   }
 
-  const ledgerRows: {
-    no: number;
+  function bankDate(d: string) {
+    const parts = String(d).split(".");
+    return parts.length === 3 ? `${parts[0].padStart(2, "0")}/${parts[1]}/${parts[2]}` : d;
+  }
+
+  // Statement period derived from payment dates
+  const allDates = data.tenants
+    .flatMap((t) => t.payments.map((p) => p.date))
+    .filter(Boolean)
+    .sort((a, b) => {
+      const sa = String(a).split(".");
+      const sb = String(b).split(".");
+      const na = sa.length === 3 ? Number(`${sa[2]}${sa[1]}${sa[0]}`) : 0;
+      const nb = sb.length === 3 ? Number(`${sb[2]}${sb[1]}${sb[0]}`) : 0;
+      return na - nb;
+    });
+  const statementFrom = allDates.length ? bankDate(allDates[0]) : data.date;
+  const statementTo = allDates.length ? bankDate(allDates[allDates.length - 1]) : data.date;
+
+  type LedgerRow = {
+    kind: "open" | "txn" | "close";
     tenant: string;
     property: string;
     unit: string;
@@ -213,17 +232,29 @@ export function HabicoFinancialReport({ data }: { data: FinancialReportData }) {
     method: string;
     reference: string;
     amount: number;
-    arrears: number;
+    balance: number;
     remarks: string;
-    isSubtotal: boolean;
-  }[] = [];
+  };
 
-  let lineNo = 0;
+  const ledgerRows: LedgerRow[] = [];
   data.tenants.forEach((t) => {
+    const opening = Math.round(t.arrearsAtHandover * t.monthlyRent);
+    ledgerRows.push({
+      kind: "open",
+      tenant: t.name,
+      property: "",
+      unit: "",
+      date: "",
+      description: "OPENING BALANCE (brought forward)",
+      method: "",
+      reference: "",
+      amount: 0,
+      balance: opening,
+      remarks: "",
+    });
     t.payments.forEach((p) => {
-      lineNo += 1;
       ledgerRows.push({
-        no: lineNo,
+        kind: "txn",
         tenant: t.name,
         property: p.propertyName ?? "",
         unit: p.unit ?? "",
@@ -232,32 +263,29 @@ export function HabicoFinancialReport({ data }: { data: FinancialReportData }) {
         method: p.method ?? "",
         reference: p.reference ?? "",
         amount: p.amount,
-        arrears: 0,
+        balance: 0,
         remarks: "",
-        isSubtotal: false,
       });
     });
-    lineNo += 1;
     ledgerRows.push({
-      no: lineNo,
+      kind: "close",
       tenant: t.name,
       property: "",
       unit: "",
       date: "",
-      description: `SUBTOTAL — ${t.name.toUpperCase()}`,
+      description: "CLOSING BALANCE (arrears outstanding)",
       method: "",
       reference: "",
-      amount: t.totalPaid,
-      arrears: t.arrears,
-      remarks: t.remarks,
-      isSubtotal: true,
+      amount: 0,
+      balance: t.arrears,
+      remarks: "",
     });
   });
 
-  function bankDate(d: string) {
-    const parts = String(d).split(".");
-    return parts.length === 3 ? `${parts[0].padStart(2, "0")}/${parts[1]}/${parts[2]}` : d;
-  }
+  const tableRows = ledgerRows.map((row, idx) => ({ ...row, no: idx + 1 }));
+  const grandOpening = data.tenants.reduce((s, t) => s + Math.round(t.arrearsAtHandover * t.monthlyRent), 0);
+  const grandReceived = data.totalRentPaid;
+  const grandClosing = data.totalArrears;
 
   return (
     <div className="space-y-4">
@@ -344,53 +372,74 @@ export function HabicoFinancialReport({ data }: { data: FinancialReportData }) {
           </>
         )}
 
-        {/* Bank Statement Ledger */}
-        <h3>Summary — Bank Statement</h3>
+        {/* Bank Statement */}
+        <h3>Bank Statement — Rent Collections</h3>
+        <p className="free-text">
+          <strong>Statement period:</strong> {statementFrom} – {statementTo}
+        </p>
         <table>
           <thead>
             <tr>
               <th className="text-center">No.</th>
               <th>Date</th>
-              <th>Tenant</th>
-              <th>Property · Unit</th>
+              <th>Details (Tenant · Property · Unit)</th>
               <th>Description / Period Paid For</th>
               <th>How Paid</th>
               <th>Ref</th>
-              <th className="text-right">Rent Paid (UGX)</th>
-              <th className="text-right">Arrears</th>
+              <th className="text-right">Deposits / Rent Received (UGX)</th>
+              <th className="text-right">Balance (UGX)</th>
               <th>Remarks</th>
             </tr>
           </thead>
           <tbody>
-            {ledgerRows.map((row, idx) =>
-              row.isSubtotal ? (
-                <tr key={idx} className="summary-row">
-                  <td className="text-center">{row.no}</td>
-                  <td colSpan={2} className="font-bold">{row.description}</td>
-                  <td colSpan={3} />
-                  <td className="text-right font-bold">{formatNum(row.amount)}</td>
-                  <td className="text-right font-bold">{row.arrears > 0 ? formatNum(row.arrears) : "-"}</td>
-                  <td style={{ fontSize: "8px", color: row.arrears > 0 ? "#dc2626" : "#059669" }}>{row.remarks}</td>
-                </tr>
-              ) : (
-                <tr key={idx}>
-                  <td className="text-center">{row.no}</td>
-                  <td>{bankDate(row.date)}</td>
-                  <td className="font-bold">{row.tenant}</td>
-                  <td>{[row.property, row.unit].filter(Boolean).join(" · ") || "—"}</td>
-                  <td>{row.description}</td>
-                  <td>{row.method}</td>
-                  <td>{row.reference}</td>
-                  <td className="text-right">{formatNum(row.amount)}</td>
-                  <td className="text-right">-</td>
-                  <td />
-                </tr>
-              ),
-            )}
+            {tableRows.map((row, idx) => (
+              <tr
+                key={idx}
+                style={
+                  row.kind === "open"
+                    ? { background: "#eef2ff", fontWeight: 700 }
+                    : row.kind === "close"
+                      ? { background: "#ecfdf5", fontWeight: 700 }
+                      : undefined
+                }
+              >
+                <td className="text-center">{row.no}</td>
+                <td>{row.kind === "txn" ? bankDate(row.date) : ""}</td>
+                <td>
+                  {row.kind === "txn"
+                    ? [row.tenant, row.property, row.unit].filter(Boolean).join(" · ")
+                    : row.tenant}
+                </td>
+                <td>
+                  {row.kind === "open" || row.kind === "close" ? (
+                    <span className="font-bold">{row.description}</span>
+                  ) : (
+                    row.description
+                  )}
+                </td>
+                <td>{row.kind === "txn" ? row.method : ""}</td>
+                <td>{row.kind === "txn" ? row.reference : ""}</td>
+                <td className="text-right">{row.kind === "txn" ? formatNum(row.amount) : ""}</td>
+                <td className="text-right font-bold">{formatNum(row.balance)}</td>
+                <td style={{ fontSize: "8px" }}>{row.remarks}</td>
+              </tr>
+            ))}
             <tr className="summary-row">
-              <td colSpan={7} className="text-right font-bold">GRAND TOTAL</td>
-              <td className="text-right font-bold">{formatNum(data.totalRentPaid)}</td>
-              <td className="text-right font-bold">{data.totalArrears > 0 ? formatNum(data.totalArrears) : "-"}</td>
+              <td colSpan={6} className="text-right font-bold">OPENING BALANCE (brought forward)</td>
+              <td className="text-right">{formatNum(grandOpening)}</td>
+              <td className="text-right font-bold">{formatNum(grandOpening)}</td>
+              <td />
+            </tr>
+            <tr className="summary-row">
+              <td colSpan={6} className="text-right font-bold">RENT RECEIVED (total deposits)</td>
+              <td className="text-right">{formatNum(grandReceived)}</td>
+              <td className="text-right" />
+              <td />
+            </tr>
+            <tr className="summary-row">
+              <td colSpan={6} className="text-right font-bold">CLOSING BALANCE (arrears outstanding)</td>
+              <td className="text-right">{formatNum(grandClosing)}</td>
+              <td className="text-right font-bold">{formatNum(grandClosing)}</td>
               <td />
             </tr>
           </tbody>
