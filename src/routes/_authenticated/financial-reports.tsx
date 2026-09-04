@@ -100,7 +100,7 @@ function FinancialReportsPage() {
     queryFn: async () => {
       let q = supabase
         .from("properties")
-        .select("id, name, location, owner_id");
+        .select("id, name, location, owner_id, landlord_share_percent");
       if (companyId) q = q.eq("company_id", companyId);
       const { data, error } = await q.order("name");
       if (error) throw error;
