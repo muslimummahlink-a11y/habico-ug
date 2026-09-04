@@ -767,11 +767,14 @@ const { data: ownerProfiles = [] } = useQuery({
                       {properties.length === 0 ? (
                         <option disabled>No properties found</option>
                       ) : (
-                        properties.map((p: any) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name}{p.owner_id ? ` — ${getOwnerName(p.owner_id)}` : ""}
-                          </option>
-                        ))}
+                        properties.map((p: any) => {
+                          const label = p.owner_id ? p.name + " \u2014 " + getOwnerName(p.owner_id) : p.name;
+                          return (
+                            <option key={p.id} value={p.id}>
+                              {label}
+                            </option>
+                          );
+                        })
                       )}
                     </select>
                   )}
