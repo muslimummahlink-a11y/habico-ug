@@ -1,9 +1,12 @@
 // @ts-nocheck
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useRecordActions } from "@/hooks/use-record-actions";
-import { Trash2, Edit2, Copy2, Loader2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { RecordActions } from "@/components/record-actions";
+import { Trash2, Edit2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_authenticated/demo-actions")({
@@ -22,7 +25,6 @@ interface Lead {
 }
 
 function DemoActionsPage() {
-  const { toast } = useToast();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,10 +41,9 @@ function DemoActionsPage() {
   });
 
   // Refetch on mount
-  useState(() => {
+  useEffect(() => {
     refetch();
-    return () => {};
-  });
+  }, []);
 
   const { deleteMutation, editMutation, copyMutation } = useRecordActions({ table: "leads" });
 
