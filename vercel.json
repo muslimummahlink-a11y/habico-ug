@@ -1,0 +1,13 @@
+{
+  "headers": [
+    {
+      "source": "/Habico%20Portal-Setup-1.0.0.exe",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/x-msdownload"
+        }
+      ]
+    }
+  ]
+}

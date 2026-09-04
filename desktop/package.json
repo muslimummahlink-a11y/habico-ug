@@ -1,0 +1,43 @@
+{
+  "name": "habico-portal-desktop",
+  "version": "1.1.0",
+  "description": "Habico Property Managers Portal - Desktop App",
+  "author": "Habico Property Managers",
+  "license": "UNLICENSED",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.habico.portal",
+    "productName": "Habico Portal",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "buildResources/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "icon": "buildResources/icon.ico"
+    },
+
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Habico Portal",
+      "runAfterFinish": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^43.1.0",
+    "electron-builder": "^26.15.3",
+    "png-to-ico": "^3.0.2"
+  }
+}

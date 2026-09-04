@@ -1,0 +1,1 @@
+CREATE POLICY ric_tenant_read ON public.rental_id_cards FOR SELECT TO authenticated USING (tenant_id IN (SELECT id FROM public.tenants WHERE auth_user_id = auth.uid()));

@@ -1,0 +1,2 @@
+function getRouter() {}
+export { getRouter };

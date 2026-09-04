@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /properties
+Disallow: /leases
+Disallow: /tenants
+Disallow: /payments
+Disallow: /maintenance
+Disallow: /reports
+Disallow: /settings
+Disallow: /auth
+
+Sitemap: https://www.habico.ug/sitemap.xml
