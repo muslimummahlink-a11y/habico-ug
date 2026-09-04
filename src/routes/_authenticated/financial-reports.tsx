@@ -10,7 +10,33 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { Download, TrendingUp, TrendingDown, DollarSign, Building2, Landmark, ScrollText, FileText, RotateCcw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Download,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Building2,
+  Landmark,
+  ScrollText,
+  FileText,
+  RotateCcw,
+  ArrowUpRight,
+  ArrowDownRight,
+  Wallet,
+  CalendarDays,
+  Users,
+  BarChart3,
+  PieChart,
+  CheckCircle2,
+} from "lucide-react";
 import jsPDF from "jspdf";
 import { toPng } from "html-to-image";
 import { HabicoFinancialReport, buildPropertyReportData } from "@/components/habico-financial-report";
@@ -385,89 +411,125 @@ const { data: ownerProfiles = [] } = useQuery({
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <PageTour route="/financial-reports" role={role} />
-      <div>
-        <div className="text-xs font-bold uppercase tracking-widest text-accent">Finance</div>
-        <h1 className="display text-3xl font-bold">Financial Reports</h1>
-        <p className="text-sm text-muted-foreground">Rental income, expenses, and collection performance</p>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-brand px-6 py-6 text-primary-foreground shadow-soft">
+        <div className="relative z-10">
+          <div className="text-xs font-bold uppercase tracking-widest text-primary-foreground/70">Finance</div>
+          <h1 className="display text-3xl font-bold">Financial Reports</h1>
+          <p className="text-sm text-primary-foreground/80">Rental income, expenses, and collection performance</p>
+        </div>
+        <Landmark className="absolute -right-6 -top-6 h-32 w-32 text-primary-foreground/10" />
       </div>
 
-      <div className="flex flex-wrap items-center gap-4">
-        <select
-          className="rounded-md border border-input bg-background p-2 text-sm"
-          value={selectedYear}
-          onChange={(e) => setSelectedYear(Number(e.target.value))}
-        >
-          {years.map((y) => (
-            <option key={y} value={y}>{y}</option>
-          ))}
-        </select>
-        <select
-          className="rounded-md border border-input bg-background p-2 text-sm"
-          value={selectedMonth}
-          onChange={(e) => setSelectedMonth(Number(e.target.value))}
-        >
-          {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-            <option key={m} value={m}>
-              {new Date(0, m - 1).toLocaleString("default", { month: "long" })}
-            </option>
-          ))}
-        </select>
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3 shadow-card">
+        <CalendarDays className="h-5 w-5 text-accent" />
+        <div className="text-sm font-semibold">Reporting period</div>
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <Select
+            value={String(selectedMonth)}
+            onValueChange={(v) => setSelectedMonth(Number(v))}
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                <SelectItem key={m} value={String(m)}>
+                  {new Date(0, m - 1).toLocaleString("default", { month: "long" })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={String(selectedYear)}
+            onValueChange={(v) => setSelectedYear(Number(v))}
+          >
+            <SelectTrigger className="w-28">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {years.map((y) => (
+                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="overflow-hidden border-l-4 border-l-emerald-500 shadow-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Rental Income</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <span className="rounded-lg bg-emerald-50 p-2 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+              <DollarSign className="h-4 w-4" />
+            </span>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{formatUGX(totalRentalIncome)}</p>
-            <p className="text-xs text-muted-foreground">Lifetime collections</p>
+            <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+              <ArrowUpRight className="h-3.5 w-3.5 text-emerald-500" /> Lifetime collections
+            </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="overflow-hidden border-l-4 border-l-rose-500 shadow-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
+            <span className="rounded-lg bg-rose-50 p-2 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400">
+              <Wallet className="h-4 w-4" />
+            </span>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-red-500">{formatUGX(totalRentalExpenses)}</p>
-            <p className="text-xs text-muted-foreground">Rental-related expenses</p>
+            <p className="text-2xl font-bold text-rose-500">{formatUGX(totalRentalExpenses)}</p>
+            <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+              <ArrowDownRight className="h-3.5 w-3.5 text-rose-500" /> Rental-related expenses
+            </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="overflow-hidden border-l-4 border-l-teal-500 shadow-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Net Income</CardTitle>
-            {lifetimeNetIncome >= 0 ? (
-              <TrendingUp className="h-4 w-4 text-green-500" />
-            ) : (
-              <TrendingDown className="h-4 w-4 text-red-500" />
-            )}
+            <span className={`rounded-lg p-2 ${lifetimeNetIncome >= 0 ? "bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400" : "bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"}`}>
+              {lifetimeNetIncome >= 0 ? (
+                <TrendingUp className="h-4 w-4" />
+              ) : (
+                <TrendingDown className="h-4 w-4" />
+              )}
+            </span>
           </CardHeader>
           <CardContent>
-            <p className={`text-2xl font-bold ${lifetimeNetIncome >= 0 ? "text-green-500" : "text-red-500"}`}>
+            <p className={`text-2xl font-bold ${lifetimeNetIncome >= 0 ? "text-teal-600 dark:text-teal-400" : "text-rose-500"}`}>
               {formatUGX(Math.abs(lifetimeNetIncome))}
             </p>
-            <p className="text-xs text-muted-foreground">{lifetimeNetIncome >= 0 ? "Positive" : "Negative"}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{lifetimeNetIncome >= 0 ? "Positive cashflow" : "Negative cashflow"}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="overflow-hidden border-l-4 border-l-orange-500 shadow-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Occupancy Rate</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
+            <span className="rounded-lg bg-orange-50 p-2 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">
+              <Building2 className="h-4 w-4" />
+            </span>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{occupancyRate}%</p>
-            <p className="text-xs text-muted-foreground">{activeLeases.length} of {totalUnits} units occupied</p>
+            <p className="mt-1 text-xs text-muted-foreground">{activeLeases.length} of {totalUnits} units occupied</p>
           </CardContent>
         </Card>
       </div>
 
       <Tabs defaultValue="pnl" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="pnl">P&amp;L Statement</TabsTrigger>
-          <TabsTrigger value="collection">Collection Report</TabsTrigger>
-          <TabsTrigger value="commission">Commission Split (66/9)</TabsTrigger>
+        <TabsList className="flex-wrap">
+          <TabsTrigger value="pnl">
+            <BarChart3 className="mr-1.5 h-4 w-4" />
+            P&amp;L Statement
+          </TabsTrigger>
+          <TabsTrigger value="collection">
+            <Users className="mr-1.5 h-4 w-4" />
+            Collection Report
+          </TabsTrigger>
+          <TabsTrigger value="commission">
+            <PieChart className="mr-1.5 h-4 w-4" />
+            Commission Split (66/9)
+          </TabsTrigger>
           <TabsTrigger value="landlord">
             <Landmark className="mr-1.5 h-4 w-4" />
             Landlord Report
@@ -518,12 +580,28 @@ const { data: ownerProfiles = [] } = useQuery({
                   </TableRow>
                   <TableRow>
                     <TableCell className="font-bold text-lg">Net {netPL >= 0 ? "Profit" : "Loss"}</TableCell>
-                    <TableCell className={`text-right font-bold text-lg ${netPL >= 0 ? "text-green-500" : "text-red-500"}`}>
+                    <TableCell className={`text-right font-bold text-lg ${netPL >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
                       {formatUGX(Math.abs(netPL))}
                     </TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
+              </div>
+              <div className="mt-4 grid gap-3 border-t pt-4 sm:grid-cols-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Total Income</p>
+                  <p className="text-lg font-bold text-teal-600 dark:text-teal-400">{formatUGX(totalIncome)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Total Expenses</p>
+                  <p className="text-lg font-bold text-rose-500">{formatUGX(totalExpenses)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Margin</p>
+                  <p className={`text-lg font-bold ${totalIncome > 0 && netPL >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
+                    {totalIncome > 0 ? `${Math.round((netPL / totalIncome) * 100)}%` : "—"}
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -550,27 +628,39 @@ const { data: ownerProfiles = [] } = useQuery({
             <CardContent className="space-y-6">
               <div ref={collectionRef}>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Expected Rent</p>
-                  <p className="text-2xl font-bold">{formatUGX(expectedRent)}</p>
+                <div className="rounded-xl border bg-muted/30 p-4">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span className="rounded-lg bg-muted p-1.5"><CalendarDays className="h-4 w-4" /></span>
+                    Expected Rent
+                  </div>
+                  <p className="mt-2 text-2xl font-bold">{formatUGX(expectedRent)}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Collected</p>
-                  <p className="text-2xl font-bold text-green-500">{formatUGX(collected)}</p>
+                <div className="rounded-xl border bg-muted/30 p-4">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span className="rounded-lg bg-emerald-100 p-1.5 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400"><TrendingUp className="h-4 w-4" /></span>
+                    Collected
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400">{formatUGX(collected)}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Outstanding</p>
-                  <p className="text-2xl font-bold text-red-500">{formatUGX(outstanding)}</p>
+                <div className="rounded-xl border bg-muted/30 p-4">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span className="rounded-lg bg-rose-100 p-1.5 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400"><TrendingDown className="h-4 w-4" /></span>
+                    Outstanding
+                  </div>
+                  <p className="mt-2 text-2xl font-bold text-rose-500">{formatUGX(outstanding)}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Collection Rate</p>
+                <div className="rounded-xl border bg-muted/30 p-4">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span className="rounded-lg bg-orange-100 p-1.5 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400"><Wallet className="h-4 w-4" /></span>
+                    Collection Rate
+                  </div>
                   <p
-                    className={`text-2xl font-bold ${
+                    className={`mt-2 text-2xl font-bold ${
                       collectionRate >= 80
-                        ? "text-green-500"
+                        ? "text-emerald-600 dark:text-emerald-400"
                         : collectionRate >= 50
                           ? "text-amber-500"
-                          : "text-red-500"
+                          : "text-rose-500"
                     }`}
                   >
                     {collectionRate}%
@@ -624,17 +714,19 @@ const { data: ownerProfiles = [] } = useQuery({
                           <TableCell className="text-right">{formatUGX(t.paid)}</TableCell>
                           <TableCell className="text-right text-red-500">{formatUGX(t.balance)}</TableCell>
                           <TableCell>
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                            <Badge
+                              variant="outline"
+                              className={
                                 t.status === "Paid"
-                                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                  ? "border-transparent bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
                                   : t.status === "Partial"
-                                    ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
-                                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                              }`}
+                                    ? "border-transparent bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
+                                    : "border-transparent bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300"
+                              }
                             >
+                              {t.status === "Paid" && <CheckCircle2 className="mr-1 h-3 w-3" />}
                               {t.status}
-                            </span>
+                            </Badge>
                           </TableCell>
                         </TableRow>
                       ))
@@ -672,35 +764,50 @@ const { data: ownerProfiles = [] } = useQuery({
                 return (
                   <div className="space-y-6">
                     <div className="grid gap-4 sm:grid-cols-3">
-                      <Card>
-                        <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Total Collected</CardTitle></CardHeader>
+                      <Card className="shadow-card">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                          <CardTitle className="text-sm font-medium">Total Collected</CardTitle>
+                          <span className="rounded-lg bg-muted p-1.5"><Wallet className="h-4 w-4 text-muted-foreground" /></span>
+                        </CardHeader>
                         <CardContent><p className="text-2xl font-bold">{formatUGX(collected)}</p></CardContent>
                       </Card>
-                      <Card>
-                        <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Landlord Payout (66%)</CardTitle></CardHeader>
-                        <CardContent><p className="text-2xl font-bold text-green-500">{formatUGX(landlordShare)}</p></CardContent>
+                      <Card className="shadow-card">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                          <CardTitle className="text-sm font-medium">Landlord Payout (66%)</CardTitle>
+                          <span className="rounded-lg bg-emerald-100 p-1.5 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400"><TrendingUp className="h-4 w-4" /></span>
+                        </CardHeader>
+                        <CardContent><p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{formatUGX(landlordShare)}</p></CardContent>
                       </Card>
-                      <Card>
-                        <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Company Fee (9%)</CardTitle></CardHeader>
-                        <CardContent><p className="text-2xl font-bold text-blue-500">{formatUGX(companyFee)}</p></CardContent>
+                      <Card className="shadow-card">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                          <CardTitle className="text-sm font-medium">Company Fee (9%)</CardTitle>
+                          <span className="rounded-lg bg-blue-100 p-1.5 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400"><PieChart className="h-4 w-4" /></span>
+                        </CardHeader>
+                        <CardContent><p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{formatUGX(companyFee)}</p></CardContent>
                       </Card>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Landlord (66%)</span>
-                        <span className="font-semibold">{formatUGX(landlordShare)}</span>
+                    <div className="space-y-3 rounded-xl border bg-muted/20 p-4">
+                      <div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />Landlord</span>
+                          <span className="flex items-center gap-2"><Badge variant="outline" className="border-transparent bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">66%</Badge>{formatUGX(landlordShare)}</span>
+                        </div>
+                        <Progress value={66} className="mt-2 h-2.5 [&>div]:bg-emerald-500" />
                       </div>
-                      <Progress value={66} className="h-3 [&>div]:bg-green-500" />
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Habico Fee (9%)</span>
-                        <span className="font-semibold">{formatUGX(companyFee)}</span>
+                      <div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-blue-500" />Habico Fee</span>
+                          <span className="flex items-center gap-2"><Badge variant="outline" className="border-transparent bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">9%</Badge>{formatUGX(companyFee)}</span>
+                        </div>
+                        <Progress value={9} className="mt-2 h-2.5 [&>div]:bg-blue-500" />
                       </div>
-                      <Progress value={9} className="h-3 [&>div]:bg-blue-500" />
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Ops / Reserve (25%)</span>
-                        <span className="font-semibold">{formatUGX(opsReserve)}</span>
+                      <div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-amber-500" />Ops / Reserve</span>
+                          <span className="flex items-center gap-2"><Badge variant="outline" className="border-transparent bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">25%</Badge>{formatUGX(opsReserve)}</span>
+                        </div>
+                        <Progress value={25} className="mt-2 h-2.5 [&>div]:bg-amber-500" />
                       </div>
-                      <Progress value={25} className="h-3 [&>div]:bg-amber-500" />
                     </div>
                     <Table>
                       <TableHeader>
@@ -763,106 +870,99 @@ const { data: ownerProfiles = [] } = useQuery({
                 <div className="w-full md:w-max">
                   <label className="mb-1.5 block text-sm font-medium">Property</label>
                   {isLoadingProperties ? (
-                    <div className="w-full rounded-md border border-input bg-background p-2 text-sm">
-                      <Skeleton className="h-6" />
+                    <div className="w-80 max-w-full">
+                      <Skeleton className="h-9 w-full" />
                     </div>
                   ) : (
-                    <select
-                      className="w-full rounded-md border border-input bg-background p-2 text-sm"
-                      value={selectedPropertyId}
-                      onChange={(e) => setSelectedPropertyId(e.target.value)}
-                    >
-                      <option value="">Select a property…</option>
-                      {properties.length === 0 ? (
-                        <option disabled>No properties found</option>
-                      ) : (
-                        properties.map((p: any) => {
-                          const label = p.owner_id ? p.name + " \u2014 " + getOwnerName(p.owner_id) : p.name;
-                          return (
-                            <option key={p.id} value={p.id}>
-                              {label}
-                            </option>
-                          );
-                        })
-                      )}
-                    </select>
+                    <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
+                      <SelectTrigger className="w-80 max-w-full">
+                        <SelectValue placeholder="Select a property…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {properties.length === 0 ? (
+                          <SelectItem value="__none" disabled>No properties found</SelectItem>
+                        ) : (
+                          properties.map((p: any) => {
+                            const label = p.owner_id ? p.name + " \u2014 " + getOwnerName(p.owner_id) : p.name;
+                            return (
+                              <SelectItem key={p.id} value={p.id}>
+                                {label}
+                              </SelectItem>
+                            );
+                          })
+                        )}
+                      </SelectContent>
+                    </Select>
                   )}
                 </div>
+
                 <div className="w-32">
                   <label className="mb-1.5 block text-sm font-medium">From Month</label>
-                  <select
-                    className="w-full rounded-md border border-input bg-background p-2 text-sm"
-                    value={reportFromMonth}
-                    onChange={(e) => setReportFromMonth(Number(e.target.value))}
-                  >
-                    <option value="">From...</option>
-                    {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                      <option key={m} value={m}>
-                        {new Date(0, m - 1).toLocaleString("default", { month: "short" })}
-                      </option>
-                    ))}
-                  </select>
+                  <Select value={String(reportFromMonth)} onValueChange={(v) => setReportFromMonth(Number(v))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                        <SelectItem key={m} value={String(m)}>
+                          {new Date(0, m - 1).toLocaleString("default", { month: "short" })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="w-28">
                   <label className="mb-1.5 block text-sm font-medium">From Year</label>
-                  <select
-                    className="w-full rounded-md border border-input bg-background p-2 text-sm"
-                    value={reportFromYear}
-                    onChange={(e) => setReportFromYear(Number(e.target.value))}
-                  >
-                    <option value="">From...</option>
-                    {Array.from({ length: 10 }, (_, i) => now.getFullYear() - 5 + i).map((y) => (
-                      <option key={y} value={y}>{y}</option>
-                    ))}
-                  </select>
+                  <Select value={String(reportFromYear)} onValueChange={(v) => setReportFromYear(Number(v))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 10 }, (_, i) => now.getFullYear() - 5 + i).map((y) => (
+                        <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="w-32">
                   <label className="mb-1.5 block text-sm font-medium">To Month</label>
-                  <select
-                    className="w-full rounded-md border border-input bg-background p-2 text-sm"
-                    value={reportToMonth}
-                    onChange={(e) => setReportToMonth(Number(e.target.value))}
-                  >
-                    <option value="">To...</option>
-                    {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                      <option key={m} value={m}>
-                        {new Date(0, m - 1).toLocaleString("default", { month: "short" })}
-                      </option>
-                    ))}
-                  </select>
+                  <Select value={String(reportToMonth)} onValueChange={(v) => setReportToMonth(Number(v))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                        <SelectItem key={m} value={String(m)}>
+                          {new Date(0, m - 1).toLocaleString("default", { month: "short" })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="w-28">
                   <label className="mb-1.5 block text-sm font-medium">To Year</label>
-                  <select
-                    className="w-full rounded-md border border-input bg-background p-2 text-sm"
-                    value={reportToYear}
-                    onChange={(e) => setReportToYear(Number(e.target.value))}
-                  >
-                    <option value="">To...</option>
-                    {Array.from({ length: 10 }, (_, i) => now.getFullYear() - 5 + i).map((y) => (
-                      <option key={y} value={y}>{y}</option>
-                    ))}
-                  </select>
+                  <Select value={String(reportToYear)} onValueChange={(v) => setReportToYear(Number(v))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 10 }, (_, i) => now.getFullYear() - 5 + i).map((y) => (
+                        <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
               {/* State messages */}
               {!selectedPropertyId && (
-                <div className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
-                  <Skeleton className="h-10 w-10" />
-                  <p className="font-medium">Select a property</p>
-                  <p className="text-sm">
-                    Choose a property above to generate the landlord financial report.
+                <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-14 text-center">
+                  <span className="rounded-full bg-muted p-4"><Landmark className="h-8 w-8 text-muted-foreground" /></span>
+                  <p className="font-semibold">Select a property</p>
+                  <p className="max-w-sm text-sm text-muted-foreground">
+                    Choose a property above to generate the official Habico financial report for the landlord.
                   </p>
                 </div>
               )}
 
               {selectedPropertyId && propertyLeases.length === 0 && (
-                <div className="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
-                  <Building2 className="h-10 w-10" />
-                  <p className="font-medium">No leases found</p>
-                  <p className="text-sm">
-                    This property has no lease records yet.
+                <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-14 text-center">
+                  <span className="rounded-full bg-muted p-4"><Building2 className="h-8 w-8 text-muted-foreground" /></span>
+                  <p className="font-semibold">No leases found</p>
+                  <p className="max-w-sm text-sm text-muted-foreground">
+                    This property has no lease records yet for the selected period.
                   </p>
                 </div>
               )}
@@ -870,10 +970,19 @@ const { data: ownerProfiles = [] } = useQuery({
               {/* Payment Calendar */}
               {selectedPropertyId && propertyLeases.length > 0 && (
                 <div className="space-y-3">
-                  <h3 className="text-sm font-semibold">Payment Calendar</h3>
-                  <p className="text-xs text-muted-foreground">
-                    Monthly payment status from {getMonthLabel(reportFromYear, reportFromMonth)} to {getMonthLabel(reportToYear, reportToMonth)}
-                  </p>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-semibold">Payment Calendar</h3>
+                      <p className="text-xs text-muted-foreground">
+                        Monthly payment status from {getMonthLabel(reportFromYear, reportFromMonth)} to {getMonthLabel(reportToYear, reportToMonth)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="border-transparent bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">Paid</Badge>
+                      <Badge variant="outline" className="border-transparent bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300">Unpaid</Badge>
+                      <Badge variant="outline" className="border-transparent bg-muted text-muted-foreground">Future</Badge>
+                    </div>
+                  </div>
                   <div className="space-y-3 overflow-x-auto">
                     {propertyLeases
                       .filter((l: any) => l.start_date)
@@ -884,11 +993,11 @@ const { data: ownerProfiles = [] } = useQuery({
                         const lastMonth = reportToYear * 12 + (reportToMonth - 1);
                         const tenantPayments = propertyPayments.filter((p: any) => p.lease_id === lease.id);
                         return (
-                          <div key={lease.id} className="rounded-md border p-3">
+                          <div key={lease.id} className="rounded-xl border bg-card p-3 shadow-card">
                             <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                              <span className="font-semibold">{lease.profile?.full_name ?? lease.profile?.email ?? "Tenant"}</span>
+                              <span className="flex items-center gap-1.5 font-semibold"><Users className="h-4 w-4 text-accent" />{lease.profile?.full_name ?? lease.profile?.email ?? "Tenant"}</span>
                               <span className="text-muted-foreground">Unit {lease.units?.unit_number ?? "—"}</span>
-                              <span className="text-muted-foreground">UGX {Number(lease.monthly_rent).toLocaleString()}/mo</span>
+                              <Badge variant="outline" className="border-transparent bg-muted text-muted-foreground">UGX {Number(lease.monthly_rent).toLocaleString()}/mo</Badge>
                             </div>
                             <div className="flex flex-wrap gap-1">
                               {calendarMonths
@@ -901,17 +1010,17 @@ const { data: ownerProfiles = [] } = useQuery({
                                   const future = isFutureMonth(cm.year, cm.month);
                                   let bg: string;
                                   let statusLabel: string;
-                                  if (future) { bg = "bg-gray-100 text-gray-400 dark:bg-gray-800"; statusLabel = "Future"; }
-                                  else if (paid) { bg = "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400"; statusLabel = "Paid"; }
-                                  else { bg = "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-400"; statusLabel = "Unpaid"; }
+                                  if (future) { bg = "bg-muted text-muted-foreground"; statusLabel = "Future"; }
+                                  else if (paid) { bg = "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"; statusLabel = "Paid"; }
+                                  else { bg = "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300"; statusLabel = "Unpaid"; }
                                   return (
                                     <div
                                       key={cm.label}
-                                      className={`flex min-w-[60px] flex-col items-center rounded-md px-2 py-1.5 text-xs font-medium ${bg}`}
+                                      className={`flex min-w-[60px] flex-col items-center rounded-lg px-2 py-1.5 text-xs font-medium ${bg}`}
                                       title={`${cm.label}: ${statusLabel}`}
                                     >
                                       <span>{cm.label}</span>
-                                      <span className="mt-0.5 text-[10px]">{future ? "⬜" : paid ? "✅" : "❌"}</span>
+                                      <span className="mt-0.5 text-[10px]">{future ? "•" : paid ? "✓" : "✗"}</span>
                                     </div>
                                   );
                                 })}
