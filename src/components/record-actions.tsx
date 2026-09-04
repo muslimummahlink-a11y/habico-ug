@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
-import { Trash2, Edit2, Copy2, Loader2, Eye, EyeOff } from "lucide-react";
+import { Trash2, Edit2, Copy, Loader2, Eye, EyeOff } from "lucide-react";
 import { useRecordActions } from "@/hooks/use-record-actions";
 
 interface RecordActionsProps<T> {
@@ -17,7 +16,6 @@ interface RecordActionsProps<T> {
 
 export function RecordActions<T>({ item, table, onDeleteConfirm, onEdit, onCopy, copyExcludeKeys }: RecordActionsProps<T>) {
   const [open, setOpen] = useState(false);
-  const { toast } = useToast();
   const { deleteMutation, editMutation, copyMutation } = useRecordActions({ table });
 
   const handleDelete = async (id: string) => {
@@ -51,7 +49,7 @@ export function RecordActions<T>({ item, table, onDeleteConfirm, onEdit, onCopy,
         className="text-secondary hover:text-secondary-foreground transition-colors p-1 rounded hover:bg-secondary/10"
         title="Copy"
       >
-        <Copy2 className="h-4 w-4" />
+        <Copy className="h-4 w-4" />
       </button>
 
       {/* Delete button with confirmation */}
