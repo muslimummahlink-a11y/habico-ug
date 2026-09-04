@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useHighestRole } from "@/hooks/use-auth";
+import { useCompanyId } from "@/hooks/use-company-id";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,17 +30,19 @@ function formatUGX(amount: number) {
 
 function FinancialReportsPage() {
   const role = useHighestRole();
+  const { data: companyId } = useCompanyId();
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
 
   const { data: payments = [] } = useQuery({
-    queryKey: ["financial-reports-payments"],
+    queryKey: ["financial-reports-payments", companyId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from("payments")
-        .select("*, leases!inner(monthly_rent, units!inner(unit_number, properties!inner(name)), tenant_id)")
-        .order("payment_date", { ascending: false });
+        .select("*, leases!inner(monthly_rent, units!inner(unit_number, properties!inner(name)), tenant_id)");
+      if (companyId) q = q.eq("leases.units.company_id", companyId);
+      const { data, error } = await q.order("payment_date", { ascending: false });
       if (error) throw error;
       const ids = Array.from(new Set((data ?? []).map((p: any) => p.leases?.tenant_id).filter(Boolean)));
       const { data: tenantList } = ids.length
@@ -51,12 +54,14 @@ function FinancialReportsPage() {
   });
 
   const { data: activeLeases = [] } = useQuery({
-    queryKey: ["financial-reports-active-leases"],
+    queryKey: ["financial-reports-active-leases", companyId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from("leases")
         .select("*, units!inner(unit_number, properties!inner(name))")
         .eq("status", "active");
+      if (companyId) q = q.eq("units.company_id", companyId);
+      const { data, error } = await q;
       if (error) throw error;
       const ids = Array.from(new Set((data ?? []).map((l: any) => l.tenant_id).filter(Boolean)));
       const { data: tenantList } = ids.length
@@ -68,32 +73,36 @@ function FinancialReportsPage() {
   });
 
   const { data: expenses = [] } = useQuery({
-    queryKey: ["financial-reports-expenses"],
+    queryKey: ["financial-reports-expenses", companyId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from("expenses")
-        .select("*, expense_categories(name)")
-        .order("expense_date", { ascending: false });
+        .select("*, expense_categories(name)");
+      if (companyId) q = q.eq("company_id", companyId);
+      const { data, error } = await q.order("expense_date", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
   });
 
   const { data: totalUnits = 0 } = useQuery({
-    queryKey: ["financial-reports-total-units"],
+    queryKey: ["financial-reports-total-units", companyId],
     queryFn: async () => {
-      const { count } = await supabase.from("units").select("*", { count: "exact", head: true });
+      let q = supabase.from("units").select("*", { count: "exact", head: true });
+      if (companyId) q = q.eq("company_id", companyId);
+      const { count } = await q;
       return count ?? 0;
     },
   });
 
   const { data: properties = [], isLoading: isLoadingProperties } = useQuery({
-    queryKey: ["financial-reports-properties"],
+    queryKey: ["financial-reports-properties", companyId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from("properties")
-        .select("id, name, location, owner_id, landlord_share_percent")
-        .order("name");
+        .select("id, name, location, owner_id, landlord_share_percent");
+      if (companyId) q = q.eq("company_id", companyId);
+      const { data, error } = await q.order("name");
       if (error) throw error;
       return data ?? [];
     },
