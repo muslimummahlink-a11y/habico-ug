@@ -765,20 +765,11 @@ const { data: ownerProfiles = [] } = useQuery({
                     >
                       <option value="">Select a property…</option>
                       {properties.length === 0 ? (
-                        <option disabled>
-                          <p className="text-xs text-muted-foreground">No properties found</p>
-                        </option>
+                        <option disabled>No properties found</option>
                       ) : (
                         properties.map((p: any) => (
                           <option key={p.id} value={p.id}>
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{p.name}</span>
-                              {p.owner_id && (
-                                <span className="text-xs text-muted-foreground">
-                                  — {ownerMap.get(p.owner_id)?.full_name ?? "—"}
-                                </span>
-                              )}
-                            </div>
+                            {p.name}{p.owner_id ? ` — ${getOwnerName(p.owner_id)}` : ""}
                           </option>
                         ))}
                       )}
