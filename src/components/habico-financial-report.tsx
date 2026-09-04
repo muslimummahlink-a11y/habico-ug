@@ -25,6 +25,8 @@ interface TenantAccount {
   totalPaid: number;
   arrears: number;
   remarks: string;
+  openingBalance: number;
+  closingBalance: number;
 }
 
 interface Challenge {
@@ -595,6 +597,8 @@ export function buildPropertyReportData(input: BuildReportInput): FinancialRepor
       }),
       totalPaid,
       arrears,
+      openingBalance: arrearsAtHandover * monthlyRent,
+      closingBalance: arrears,
       remarks: arrears > 0 ? formatDate(now.toISOString().split("T")[0]) : "-",
     };
   });
