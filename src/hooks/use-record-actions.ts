@@ -32,7 +32,6 @@ interface UseRecordActionsReturn<T> {
 
 export function useRecordActions<T = any>(options: UseRecordActionsOptions<T> = { table: "records" }): UseRecordActionsReturn<T> {
   const qc = useQueryClient();
-  const { toast } = useToast();
   const { table, onSuccess, onError } = options;
 
   // Delete mutation
@@ -43,19 +42,11 @@ export function useRecordActions<T = any>(options: UseRecordActionsOptions<T> = 
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [table] });
-      toast({
-        title: "Success",
-        description: "Record deleted successfully",
-        variant: "destructive",
-      });
+      toast.success("Record deleted successfully");
       onSuccess?.();
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete record",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to delete record");
       onError?.(error);
     },
   });
@@ -69,17 +60,11 @@ export function useRecordActions<T = any>(options: UseRecordActionsOptions<T> = 
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [table] });
-      toast({
-        title: "Success",
-        description: "Record updated successfully",
-      });
+      toast.success("Record updated successfully");
       onSuccess?.();
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update record",
-      });
+      toast.error(error.message || "Failed to update record");
       onError?.(error);
     },
   });
@@ -98,17 +83,11 @@ export function useRecordActions<T = any>(options: UseRecordActionsOptions<T> = 
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [table] });
-      toast({
-        title: "Success",
-        description: "Record copied successfully",
-      });
+      toast.success("Record copied successfully");
       onSuccess?.();
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to copy record",
-      });
+      toast.error(error.message || "Failed to copy record");
       onError?.(error);
     },
   });
