@@ -12,7 +12,16 @@ interface TenantAccount {
   monthlyRent: number;
   arrearsAtHandover: number;
   rentIncrement?: { amount: number; from: string };
-  payments: { date: string; amount: number; period: string }[];
+  payments: {
+    date: string;
+    amount: number;
+    period: string;
+    method?: string;
+    reference?: string;
+    unit?: string;
+    propertyName?: string;
+    type?: string;
+  }[];
   totalPaid: number;
   arrears: number;
   remarks: string;
@@ -194,6 +203,62 @@ export function HabicoFinancialReport({ data }: { data: FinancialReportData }) {
     }
   }
 
+  const ledgerRows: {
+    no: number;
+    tenant: string;
+    property: string;
+    unit: string;
+    date: string;
+    description: string;
+    method: string;
+    reference: string;
+    amount: number;
+    arrears: number;
+    remarks: string;
+    isSubtotal: boolean;
+  }[] = [];
+
+  let lineNo = 0;
+  data.tenants.forEach((t) => {
+    t.payments.forEach((p) => {
+      lineNo += 1;
+      ledgerRows.push({
+        no: lineNo,
+        tenant: t.name,
+        property: p.propertyName ?? "",
+        unit: p.unit ?? "",
+        date: p.date,
+        description: p.period,
+        method: p.method ?? "",
+        reference: p.reference ?? "",
+        amount: p.amount,
+        arrears: 0,
+        remarks: "",
+        isSubtotal: false,
+      });
+    });
+    lineNo += 1;
+    ledgerRows.push({
+      no: lineNo,
+      tenant: t.name,
+      property: "",
+      unit: "",
+      date: "",
+      description: `SUBTOTAL — ${t.name.toUpperCase()}`,
+      method: "",
+      reference: "",
+      amount: t.totalPaid,
+      arrears: t.arrears,
+      remarks: t.remarks,
+      isSubtotal: true,
+    });
+  });
+
+  function bankDate(d: string) {
+    const parts = String(d).split(".");
+    return parts.length === 3 ? `${parts[0].padStart(2, "0")}/${parts[1]}/${parts[2]}` : d;
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end gap-2">
@@ -279,36 +344,57 @@ export function HabicoFinancialReport({ data }: { data: FinancialReportData }) {
           </>
         )}
 
-        {/* Individual Tenant Accounts */}
-        <h3>Individual Accounts</h3>
-        {data.tenants.map((t, i) => (
-          <div key={i}>
-            <h4 style={{ fontSize: "10px", fontWeight: 700, margin: "8px 0 2px" }}>{i + 1}- {t.name.toUpperCase()}</h4>
-            <table>
-              <thead>
-                <tr>
-                  <th>Payment Date</th>
-                  <th>Rent Paid</th>
-                  <th>Duration Paid For</th>
+        {/* Bank Statement Ledger */}
+        <h3>Summary — Bank Statement</h3>
+        <table>
+          <thead>
+            <tr>
+              <th className="text-center">No.</th>
+              <th>Date</th>
+              <th>Tenant</th>
+              <th>Property · Unit</th>
+              <th>Description / Period Paid For</th>
+              <th>How Paid</th>
+              <th>Ref</th>
+              <th className="text-right">Rent Paid (UGX)</th>
+              <th className="text-right">Arrears</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ledgerRows.map((row, idx) =>
+              row.isSubtotal ? (
+                <tr key={idx} className="summary-row">
+                  <td className="text-center">{row.no}</td>
+                  <td colSpan={2} className="font-bold">{row.description}</td>
+                  <td colSpan={3} />
+                  <td className="text-right font-bold">{formatNum(row.amount)}</td>
+                  <td className="text-right font-bold">{row.arrears > 0 ? formatNum(row.arrears) : "-"}</td>
+                  <td style={{ fontSize: "8px", color: row.arrears > 0 ? "#dc2626" : "#059669" }}>{row.remarks}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {t.payments.map((p, j) => (
-                  <tr key={j}>
-                    <td>{p.date}</td>
-                    <td className="text-right">{formatNum(p.amount)}</td>
-                    <td>{p.period}</td>
-                  </tr>
-                ))}
-                <tr className="summary-row">
-                  <td>TOTAL RENT PAID</td>
-                  <td className="text-right">{formatNum(t.totalPaid)}</td>
+              ) : (
+                <tr key={idx}>
+                  <td className="text-center">{row.no}</td>
+                  <td>{bankDate(row.date)}</td>
+                  <td className="font-bold">{row.tenant}</td>
+                  <td>{[row.property, row.unit].filter(Boolean).join(" · ") || "—"}</td>
+                  <td>{row.description}</td>
+                  <td>{row.method}</td>
+                  <td>{row.reference}</td>
+                  <td className="text-right">{formatNum(row.amount)}</td>
+                  <td className="text-right">-</td>
                   <td />
                 </tr>
-              </tbody>
-            </table>
-          </div>
-        ))}
+              ),
+            )}
+            <tr className="summary-row">
+              <td colSpan={7} className="text-right font-bold">GRAND TOTAL</td>
+              <td className="text-right font-bold">{formatNum(data.totalRentPaid)}</td>
+              <td className="text-right font-bold">{data.totalArrears > 0 ? formatNum(data.totalArrears) : "-"}</td>
+              <td />
+            </tr>
+          </tbody>
+        </table>
 
         {/* Summary Table */}
         <h3>Summary</h3>
@@ -451,6 +537,11 @@ export function buildPropertyReportData(input: BuildReportInput): FinancialRepor
           date: formatDate(p.payment_date),
           amount: Number(p.amount),
           period: periodLabel,
+          method: p.method ?? p.payment_type ?? "",
+          reference: p.reference ?? "",
+          unit: l.units?.unit_number ?? "",
+          propertyName: property?.name ?? "",
+          type: p.payment_type ?? "Rent",
         };
       }),
       totalPaid,
