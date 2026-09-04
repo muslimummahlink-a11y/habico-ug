@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { SearchableSelect } from "@/components/ui/searchable-select";
-import { Plus, Users, TrendingUp, TrendingDown, Loader2, Pencil, Trash2, Copy2 } from "lucide-react";
+import { Plus, Users, TrendingUp, TrendingDown, Loader2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageTour } from "@/components/page-tour";
 import { ConstructionWorkflow } from "@/components/construction-workflow";
