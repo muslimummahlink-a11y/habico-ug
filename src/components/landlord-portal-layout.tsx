@@ -1,13 +1,8 @@
 import { Outlet, Link, useLocation } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
-import { LayoutDashboard, Building2, Users, FileText, DollarSign, Wrench, CreditCard, Settings, LogOut, Home, TrendingUp, Bell } from "lucide-react";
+import { LayoutDashboard, Building2, Users, FileText, DollarSign, Wrench, CreditCard, Settings, Home } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 const landlordNavItems = [
   { href: "/landlord/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -21,50 +16,9 @@ const landlordNavItems = [
 ];
 
 export function LandlordPortalLayout() {
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const { data: properties = [] } = useQuery({
-    queryKey: ["landlord-properties", user?.id],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("properties")
-        .select("id, name, location, units!inner(id, unit_number, monthly_rent, status, leases!inner(tenant_id, monthly_rent, outstanding_balance, status, tenants!inner(full_name, phone, email)))")
-        .eq("owner_id", user?.id);
-      return (data ?? []) as any[];
-    },
-    enabled: !!user,
-  });
-
-  const { data: stats } = useQuery({
-    queryKey: ["landlord-stats", user?.id],
-    queryFn: async () => {
-      const { data: props } = await supabase.from("properties").select("id, units!inner(id, monthly_rent, status, leases!inner(outstanding_balance))").eq("owner_id", user?.id);
-      if (!props) return { totalProperties: 0, totalUnits: 0, occupiedUnits: 0, totalOutstanding: 0, monthlyIncome: 0 };
-      
-      let totalUnits = 0;
-      let occupiedUnits = 0;
-      let totalOutstanding = 0;
-      let monthlyIncome = 0;
-      
-      for (const prop of props) {
-        for (const unit of prop.units) {
-          totalUnits++;
-          if (unit.status === "occupied") occupiedUnits++;
-          monthlyIncome += Number(unit.monthly_rent ?? 0);
-          if (unit.leases) {
-            for (const lease of unit.leases) {
-              totalOutstanding += Number(lease.outstanding_balance ?? 0);
-            }
-          }
-        }
-      }
-      
-      return { totalProperties: props.length, totalUnits, occupiedUnits, totalOutstanding, monthlyIncome };
-    },
-    enabled: !!user,
-  });
 
   const isActive = (href: string) => location.pathname === href;
 
@@ -126,32 +80,6 @@ export function LandlordPortalLayout() {
         </header>
 
         <main className="p-4 lg:p-6">
-          {/* Quick stats banner */}
-          {(stats && stats.totalProperties > 0) && (
-            <div className="grid gap-4 md:grid-cols-5 mb-6">
-              <Card className="shadow-card">
-                <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Properties</CardTitle></CardHeader>
-                <CardContent><p className="text-2xl font-bold">{stats.totalProperties}</p></CardContent>
-              </Card>
-              <Card className="shadow-card">
-                <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Total Units</CardTitle></CardHeader>
-                <CardContent><p className="text-2xl font-bold">{stats.totalUnits}</p></CardContent>
-              </Card>
-              <Card className="shadow-card">
-                <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Occupied</CardTitle></CardHeader>
-                <CardContent><p className="text-2xl font-bold text-green-600">{stats.occupiedUnits}/{stats.totalUnits}</p></CardContent>
-              </Card>
-              <Card className="shadow-card">
-                <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Monthly Income</CardTitle></CardHeader>
-                <CardContent><p className="text-2xl font-bold text-green-600">UGX {stats.monthlyIncome.toLocaleString()}</p></CardContent>
-              </Card>
-              <Card className="shadow-card">
-                <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Outstanding</CardTitle></CardHeader>
-                <CardContent><p className="text-2xl font-bold text-red-500">UGX {stats.totalOutstanding.toLocaleString()}</p></CardContent>
-              </Card>
-            </div>
-          )}
-
           <Outlet />
         </main>
       </div>
