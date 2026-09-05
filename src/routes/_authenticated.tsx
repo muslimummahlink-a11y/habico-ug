@@ -38,7 +38,7 @@ const routeFeatureMap: Record<string, string[]> = {
   sop: ["/sop", "/sop-checklists", "/sop-forms", "/cost-codes"],
   reports: ["/reports", "/financial-reports"],
   companies: ["/companies", "/subscription-plans"],
-  system: ["/pending-registrations", "/payment-settings", "/dev-tools"],
+  system: ["/pending-registrations", "/payment-settings", "/account-reset", "/dev-tools"],
   settings: ["/settings"],
 };
 

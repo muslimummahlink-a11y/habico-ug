@@ -10,7 +10,7 @@ import {
   ListTodo, TriangleAlert, FolderKanban, Image, Banknote, Bell, Smartphone,
   type LucideIcon, Crown, UserCog, User, Shield, BookOpen, Building, ArrowLeftRight,
   Palette, Target, Rocket, UsersRound, HardHatIcon, CircleDollarSign,
-  BriefcaseBusiness, PersonStanding, Workflow, LayoutGrid
+  BriefcaseBusiness, PersonStanding, Workflow, LayoutGrid, KeyRound
 } from "lucide-react";
 import type { AppRole } from "@/hooks/use-auth";
 
@@ -142,6 +142,7 @@ const administrationItems: NavItem[] = [
   { title: "Pending Listings", url: "/pending-listings", icon: ClipboardList },
   { title: "Land Inquiries", url: "/land-inquiries", icon: MessageSquare },
   { title: "Payment Settings", url: "/payment-settings", icon: Smartphone },
+  { title: "Account Reset", url: "/account-reset", icon: KeyRound },
   { title: "Dev Tools", url: "/dev-tools", icon: Settings },
 ];
 

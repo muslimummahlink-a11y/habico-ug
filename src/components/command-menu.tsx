@@ -11,7 +11,7 @@ import {
   PiggyBank, Landmark, FileCheck, ClipboardCheck, Hash,
   ReceiptText, ScrollText, Gauge, CalendarRange, NotebookPen,
   ListTodo, TriangleAlert, FolderKanban, Image, Banknote, Search,
-  Crown, UserCog, User, Settings, Smartphone
+  Crown, UserCog, User, Settings, Smartphone, KeyRound
 } from "lucide-react";
 import { useHighestRole } from "@/hooks/use-auth";
 import { getWorkspace } from "@/lib/workspace-config";
@@ -80,6 +80,7 @@ const allRoutes: CmdItem[] = [
   { title: "Financial Reports", url: "/financial-reports", icon: DollarSign, group: "Reports" },
   { title: "Pending Registrations", url: "/pending-registrations", icon: Clock, group: "System" },
   { title: "Payment Settings", url: "/payment-settings", icon: Smartphone, group: "System" },
+  { title: "Account Reset", url: "/account-reset", icon: KeyRound, group: "System" },
   { title: "Dev Tools", url: "/dev-tools", icon: Settings, group: "System" },
   { title: "Settings", url: "/settings", icon: Settings, group: "System" },
   { title: "My ID Card", url: "/my-id-card", icon: CreditCard, group: "My Home" },
