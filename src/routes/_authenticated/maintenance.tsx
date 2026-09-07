@@ -48,6 +48,18 @@ const categoryLabels: Record<string, string> = {
   other: "Other",
 };
 
+const statusLabelMap: Record<string, string> = {
+  open: "Open",
+  in_progress: "In Progress",
+  resolved: "Completed",
+  completed: "Completed",
+  cancelled: "Cancelled",
+};
+
+function getRequestStatusLabel(status?: string) {
+  return statusLabelMap[status || "open"] || (status || "Open").replace("_", " ");
+}
+
 function MaintenancePage() {
   const { user } = useAuth();
   const role = useHighestRole();
@@ -157,8 +169,10 @@ function MaintenancePage() {
       const rows = (data as any) || [];
       const map: Record<string, any[]> = {};
       for (const row of rows) {
-        if (!map[row.request_id]) map[row.request_id] = [];
-        map[row.request_id].push(row);
+        const requestId = row.maintenance_request_id || row.request_id;
+        if (!requestId) continue;
+        if (!map[requestId]) map[requestId] = [];
+        map[requestId].push({ ...row, image_type: row.image_type || row.type || "general" });
       }
       return map;
     },
@@ -244,10 +258,11 @@ function MaintenancePage() {
   });
 
   const uploadImageMutation = useMutation({
-    mutationFn: async ({ requestId, url }: { requestId: string; url: string }) => {
+    mutationFn: async ({ requestId, url, imageType }: { requestId: string; url: string; imageType?: string }) => {
       const { error } = await supabase.from("maintenance_images").insert({
-        request_id: requestId,
-        url,
+        maintenance_request_id: requestId,
+        image_url: url,
+        image_type: imageType || "general",
       });
       if (error) throw error;
     },
@@ -286,6 +301,10 @@ function MaintenancePage() {
     setEditResolutionNotes(request.resolution_notes || "");
     setEditOpen(true);
   }
+
+  const selectedRequestImages = editingRequest ? imagesMap?.[editingRequest.id] || [] : [];
+  const beforePhotos = selectedRequestImages.filter((img: any) => (img.image_type || "general") === "before");
+  const afterPhotos = selectedRequestImages.filter((img: any) => (img.image_type || "general") === "after");
 
   return (
     <div className="space-y-6 p-6">
@@ -345,7 +364,7 @@ function MaintenancePage() {
                         </span>
                       )}
                       <span className={`text-xs px-2 py-0.5 rounded ${statusColors[req.status] || ""}`}>
-                        {req.status.replace("_", " ")}
+                        {getRequestStatusLabel(req.status)}
                       </span>
                       <span className={`text-xs px-2 py-0.5 rounded ${priorityColors[req.priority] || ""}`}>
                         {req.priority}
@@ -362,6 +381,9 @@ function MaintenancePage() {
                       {req.actual_cost && (
                         <span>Actual: UGX {Number(req.actual_cost).toLocaleString()}</span>
                       )}
+                      {req.resolution_notes && (
+                        <span>Completion: {req.resolution_notes}</span>
+                      )}
                       {req.scheduled_date && (
                         <span>Scheduled: {new Date(req.scheduled_date).toLocaleDateString()}</span>
                       )}
@@ -375,9 +397,9 @@ function MaintenancePage() {
                           <button
                             key={img.id}
                             className="w-8 h-8 rounded-full overflow-hidden border border-border shrink-0 hover:ring-2 hover:ring-ring transition-all"
-                            onClick={() => setLightboxUrl(img.url)}
+                            onClick={() => setLightboxUrl(img.image_url || img.url)}
                           >
-                            <img src={img.url} alt="" className="w-full h-full object-cover" />
+                            <img src={img.image_url || img.url} alt="" className="w-full h-full object-cover" />
                           </button>
                         ))}
                         {images.length > 4 && (
@@ -610,36 +632,74 @@ function MaintenancePage() {
               <div>
                 <div className="border-b pb-2 mb-4"><h3 className="text-sm font-semibold">Photos</h3></div>
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Image className="h-4 w-4" />
-                    Maintenance Photos
-                  </Label>
-                  <div className="flex flex-wrap gap-2">
-                    {(imagesMap?.[editingRequest.id] || []).map((img: any) => (
-                      <div key={img.id} className="relative group">
-                        <button
-                          className="w-20 h-20 rounded-md overflow-hidden border border-border hover:ring-2 hover:ring-ring transition-all"
-                          onClick={() => setLightboxUrl(img.url)}
-                        >
-                          <img src={img.url} alt="" className="w-full h-full object-cover" />
-                        </button>
-                        <button
-                          className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => deleteImageMutation.mutate(img.id)}
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Image className="h-4 w-4" />
+                        Before Photos
+                      </Label>
+                      <div className="flex flex-wrap gap-2">
+                        {beforePhotos.length === 0 && <p className="text-xs text-muted-foreground">No before photos recorded.</p>}
+                        {beforePhotos.map((img: any) => (
+                          <div key={img.id} className="relative group">
+                            <button
+                              className="w-20 h-20 rounded-md overflow-hidden border border-border hover:ring-2 hover:ring-ring transition-all"
+                              onClick={() => setLightboxUrl(img.image_url || img.url)}
+                            >
+                              <img src={img.image_url || img.url} alt="" className="w-full h-full object-cover" />
+                            </button>
+                            <button
+                              className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => deleteImageMutation.mutate(img.id)}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                      <FileUpload
+                        value=""
+                        onChange={(url) => { if (url) uploadImageMutation.mutate({ requestId: editingRequest.id, url, imageType: "before" }); }}
+                        label="Add Before Photo"
+                        accept="image/*"
+                        maxSizeMB={5}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Image className="h-4 w-4" />
+                        After Photos
+                      </Label>
+                      <div className="flex flex-wrap gap-2">
+                        {afterPhotos.length === 0 && <p className="text-xs text-muted-foreground">No after photos recorded.</p>}
+                        {afterPhotos.map((img: any) => (
+                          <div key={img.id} className="relative group">
+                            <button
+                              className="w-20 h-20 rounded-md overflow-hidden border border-border hover:ring-2 hover:ring-ring transition-all"
+                              onClick={() => setLightboxUrl(img.image_url || img.url)}
+                            >
+                              <img src={img.image_url || img.url} alt="" className="w-full h-full object-cover" />
+                            </button>
+                            <button
+                              className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => deleteImageMutation.mutate(img.id)}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <FileUpload
+                        value=""
+                        onChange={(url) => { if (url) uploadImageMutation.mutate({ requestId: editingRequest.id, url, imageType: "after" }); }}
+                        label="Add After Photo"
+                        accept="image/*"
+                        maxSizeMB={5}
+                      />
+                    </div>
                   </div>
-                  <FileUpload
-                    value=""
-                    onChange={(url) => { if (url) uploadImageMutation.mutate({ requestId: editingRequest.id, url }); }}
-                    label="Add Photo"
-                    accept="image/*"
-                    maxSizeMB={5}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">Add photos of the issue or completed work for documentation.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Add before and after photos to show the issue and completed work clearly.</p>
                 </div>
               </div>
             </div>

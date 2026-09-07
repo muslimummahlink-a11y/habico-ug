@@ -355,6 +355,38 @@ export async function sendReminderEmail(params: {
   return data;
 }
 
+export async function sendAppointmentReminderEmail(params: {
+  to: string[];
+  title: string;
+  startsAt: string;
+  location?: string | null;
+  agenda?: string | null;
+}) {
+  const recipients = params.to.filter(Boolean);
+  if (!recipients.length) throw new Error("No appointment recipients have email addresses");
+  const resend = getResend();
+  const when = new Date(params.startsAt).toLocaleString("en-GB", {
+    dateStyle: "full",
+    timeStyle: "short",
+  });
+  const body = `
+<p style="margin:0 0 16px;font-size:14px;color:#475569;line-height:1.7;">You have an upcoming Habico appointment.</p>
+<table width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;color:#475569;line-height:1.7;">
+  <tr><td style="padding:6px 0;font-weight:600;color:#1e293b;width:110px;">Appointment</td><td>${params.title}</td></tr>
+  <tr><td style="padding:6px 0;font-weight:600;color:#1e293b;">When</td><td>${when}</td></tr>
+  ${params.location ? `<tr><td style="padding:6px 0;font-weight:600;color:#1e293b;">Where</td><td>${params.location}</td></tr>` : ""}
+  ${params.agenda ? `<tr><td style="padding:6px 0;font-weight:600;color:#1e293b;vertical-align:top;">Agenda</td><td>${params.agenda}</td></tr>` : ""}
+</table>`;
+  const { data, error } = await resend.emails.send({
+    from: "Habico Appointments <reminder@habico.ug>",
+    to: recipients,
+    subject: `Appointment reminder: ${params.title}`,
+    html: brandedWrapper("Appointment Reminder", body),
+  });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 export async function sendFinancialReportEmail(params: {
   to: string;
   landlordName: string;

@@ -30,9 +30,10 @@ function featureMode(feature: string | undefined): "rentals" | "construction" | 
   return MODE_FEATURES[feature] ?? "both";
 }
 
-function NavGroup({ label, items, mode }: { label: string; items: NavItem[]; mode: string }) {
+function NavGroup({ label, items, mode, allowedRoutes }: { label: string; items: NavItem[]; mode: string; allowedRoutes?: Set<string> }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const visibleItems = items.filter((it) => {
+    if (allowedRoutes && !allowedRoutes.has(it.url)) return false;
     if (!it.feature) return true;
     const fm = featureMode(it.feature);
     if (fm === "both") return true;
@@ -93,6 +94,17 @@ export function AppSidebar() {
     enabled: !!user?.id,
   });
   const hasCompany = !!profile?.company_id;
+  const { data: pageAccess } = useQuery({
+    queryKey: ["user-page-access", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase.from("user_page_access").select("route").eq("user_id", user.id);
+      if (error) return [];
+      return (data ?? []).map((item: any) => item.route) as string[];
+    },
+    enabled: !!user?.id && role !== "admin",
+  });
+  const allowedRoutes = pageAccess && pageAccess.length > 0 ? new Set(pageAccess) : undefined;
 
   function isModeMatch(feature: string | undefined): boolean {
     if (!feature) return true;
@@ -110,7 +122,7 @@ export function AppSidebar() {
   }
 
   function groupVisible(g: NavGroup) {
-    return hasFeature(g.feature) && isModeMatch(g.feature);
+    return hasFeature(g.feature) && isModeMatch(g.feature) && g.items.some((item) => !allowedRoutes || allowedRoutes.has(item.url));
   }
 
   function itemVisible(it: { feature?: string }) {
@@ -171,9 +183,9 @@ export function AppSidebar() {
 
       <SidebarContent>
         {ws.nav.groups.filter(groupVisible).map((g) => (
-          <NavGroup key={mode + g.label} label={g.label} items={g.items} mode={mode} />
+          <NavGroup key={mode + g.label} label={g.label} items={g.items} mode={mode} allowedRoutes={allowedRoutes} />
         ))}
-        {ws.nav.extraItems?.filter(itemVisible).map((it) => (
+        {ws.nav.extraItems?.filter((it) => (!allowedRoutes || allowedRoutes.has(it.url)) && itemVisible(it)).map((it) => (
           <SidebarGroup key={it.url}>
             <SidebarGroupContent>
               <SidebarMenu>

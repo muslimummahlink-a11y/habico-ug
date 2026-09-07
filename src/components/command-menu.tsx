@@ -11,7 +11,7 @@ import {
   PiggyBank, Landmark, FileCheck, ClipboardCheck, Hash,
   ReceiptText, ScrollText, Gauge, CalendarRange, NotebookPen,
   ListTodo, TriangleAlert, FolderKanban, Image, Banknote, Search,
-  Crown, UserCog, User, Settings, Smartphone, KeyRound
+  Crown, UserCog, User, Settings, Smartphone, KeyRound, ArrowLeftRight
 } from "lucide-react";
 import { useHighestRole } from "@/hooks/use-auth";
 import { getWorkspace } from "@/lib/workspace-config";
@@ -25,19 +25,22 @@ interface CmdItem {
 
 const allRoutes: CmdItem[] = [
   { title: "Dashboard", url: "/dashboard", icon: Home, group: "Overview" },
-  { title: "Properties", url: "/properties", icon: Building2, group: "Rental Management" },
-  { title: "Leases", url: "/leases", icon: FileText, group: "Rental Management" },
-  { title: "Tenants", url: "/tenants", icon: Users, group: "Rental Management" },
-  { title: "Payments", url: "/payments", icon: Receipt, group: "Rental Management" },
-  { title: "Recurring Billing", url: "/recurring-billing", icon: Repeat, group: "Rental Management" },
-  { title: "Payment Proofs", url: "/payment-proofs", icon: ShieldCheck, group: "Rental Management" },
-  { title: "Messages", url: "/rental-messages", icon: MessageSquare, group: "Rental Management" },
-  { title: "E-Leasing", url: "/e-leasing", icon: FileSignature, group: "Rental Management" },
-  { title: "ID Cards", url: "/rental-id-cards", icon: CreditCard, group: "Rental Management" },
-  { title: "Listing Banners", url: "/listing-banners", icon: QrCode, group: "Rental Management" },
-  { title: "Maintenance", url: "/maintenance", icon: Wrench, group: "Rental Management" },
-  { title: "Preventative Maintenance", url: "/preventative-maintenance", icon: CalendarCheck, group: "Rental Management" },
-  { title: "Tax Dashboard", url: "/rental-tax-dashboard", icon: Calculator, group: "Rental Management" },
+  { title: "Properties", url: "/properties", icon: Building2, group: "Portfolio" },
+  { title: "Landlords", url: "/landlords", icon: Landmark, group: "Portfolio" },
+  { title: "Leases", url: "/leases", icon: FileText, group: "People & Agreements" },
+  { title: "Tenants", url: "/tenants", icon: Users, group: "People & Agreements" },
+  { title: "E-Leasing", url: "/e-leasing", icon: FileSignature, group: "People & Agreements" },
+  { title: "ID Cards", url: "/rental-id-cards", icon: CreditCard, group: "People & Agreements" },
+  { title: "Payments", url: "/payments", icon: Receipt, group: "Rent & Finance" },
+  { title: "Recurring Billing", url: "/recurring-billing", icon: Repeat, group: "Rent & Finance" },
+  { title: "Payment Proofs", url: "/payment-proofs", icon: ShieldCheck, group: "Rent & Finance" },
+  { title: "Tax Dashboard", url: "/rental-tax-dashboard", icon: Calculator, group: "Rent & Finance" },
+  { title: "Messages", url: "/rental-messages", icon: MessageSquare, group: "Property Operations" },
+  { title: "Listing Banners", url: "/listing-banners", icon: QrCode, group: "Property Operations" },
+  { title: "Maintenance", url: "/maintenance", icon: Wrench, group: "Property Operations" },
+  { title: "Appointments & Schedules", url: "/preventative-maintenance", icon: CalendarCheck, group: "Property Operations" },
+  { title: "Move In/Out", url: "/move-service", icon: ArrowLeftRight, group: "Services" },
+  { title: "Move Bookings", url: "/move-bookings", icon: CalendarCheck, group: "Services" },
   { title: "Projects", url: "/projects", icon: HardHat, group: "Construction" },
   { title: "Project Dashboard", url: "/project-dashboard", icon: Gauge, group: "Construction" },
   { title: "Project Schedule", url: "/project-schedules", icon: CalendarRange, group: "Construction" },
@@ -80,7 +83,6 @@ const allRoutes: CmdItem[] = [
   { title: "Financial Reports", url: "/financial-reports", icon: DollarSign, group: "Reports" },
   { title: "Pending Registrations", url: "/pending-registrations", icon: Clock, group: "System" },
   { title: "Payment Settings", url: "/payment-settings", icon: Smartphone, group: "System" },
-  { title: "Account Reset", url: "/account-reset", icon: KeyRound, group: "System" },
   { title: "Dev Tools", url: "/dev-tools", icon: Settings, group: "System" },
   { title: "Settings", url: "/settings", icon: Settings, group: "System" },
   { title: "My ID Card", url: "/my-id-card", icon: CreditCard, group: "My Home" },

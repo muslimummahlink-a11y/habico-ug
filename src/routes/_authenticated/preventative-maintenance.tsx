@@ -3,541 +3,128 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useHighestRole } from "@/hooks/use-auth";
+import { useAuth, useHighestRole } from "@/hooks/use-auth";
+import { sendAppointmentReminder } from "@/lib/sendAppointmentReminder.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { SearchableSelect, type SearchableOption } from "@/components/ui/searchable-select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { EntityCardGrid } from "@/components/entity-card-grid";
-import { Plus, CalendarCheck, CheckCircle, ToggleLeft, ToggleRight, AlertTriangle, Pencil, Trash2 } from "lucide-react";
+import { FileUpload } from "@/components/ui/file-upload";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { CalendarDays, CheckCircle2, Clock3, FileText, Mail, Plus, Save } from "lucide-react";
 import { toast } from "sonner";
 import { PageTour } from "@/components/page-tour";
 
 export const Route = createFileRoute("/_authenticated/preventative-maintenance")({
-  head: () => ({ meta: [{ title: "Preventative Maintenance — Habico Portal" }] }),
-  component: PreventativeMaintenancePage,
+  head: () => ({ meta: [{ title: "Appointments & Schedules — Habico Portal" }] }),
+  component: AppointmentsPage,
 });
 
-const categoryLabels: Record<string, string> = {
-  plumbing: "Plumbing",
-  electrical: "Electrical",
-  hvac: "HVAC",
-  appliance: "Appliance",
-  structural: "Structural",
-  pest_control: "Pest Control",
-  cleaning: "Cleaning",
-  landscaping: "Landscaping",
-  general: "General",
+const emptyForm = {
+  title: "", appointment_type: "meeting", starts_at: "", ends_at: "", location: "", agenda: "",
+  organizer_email: "", party_one_name: "", party_one_email: "", party_two_name: "", party_two_email: "",
+  is_recurring: false, recurrence: "weekly",
 };
 
-const categoryColors: Record<string, string> = {
-  plumbing: "bg-blue-100 text-blue-800",
-  electrical: "bg-yellow-100 text-yellow-800",
-  hvac: "bg-cyan-100 text-cyan-800",
-  appliance: "bg-indigo-100 text-indigo-800",
-  structural: "bg-orange-100 text-orange-800",
-  pest_control: "bg-pink-100 text-pink-800",
-  cleaning: "bg-teal-100 text-teal-800",
-  landscaping: "bg-green-100 text-green-800",
-  general: "bg-gray-100 text-gray-800",
-};
-
-const frequencyLabels: Record<string, string> = {
-  monthly: "Monthly",
-  quarterly: "Quarterly",
-  bi_annual: "Bi-Annual",
-  annual: "Annual",
-  one_time: "One Time",
-};
-
-const frequencyIntervalDays: Record<string, number> = {
-  monthly: 30,
-  quarterly: 90,
-  bi_annual: 180,
-  annual: 365,
-  one_time: 0,
-};
-
-function PreventativeMaintenancePage() {
+function AppointmentsPage() {
+  const { user } = useAuth();
   const role = useHighestRole();
   const isStaff = role === "admin" || role === "manager" || role === "staff";
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
+  const [form, setForm] = useState({ ...emptyForm });
+  const [meeting, setMeeting] = useState<any>(null);
+  const [meetingNotes, setMeetingNotes] = useState({ notes: "", minutes: "", action_items: "" });
+  const [attachmentUrl, setAttachmentUrl] = useState("");
+  const [attachmentName, setAttachmentName] = useState("");
+  const [open, setOpen] = useState(false);
 
-  const [createOpen, setCreateOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [editingSchedule, setEditingSchedule] = useState<any>(null);
-
-  const [unitId, setUnitId] = useState("");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("general");
-  const [frequency, setFrequency] = useState("monthly");
-  const [nextDueDate, setNextDueDate] = useState("");
-  const [assignedTo, setAssignedTo] = useState("");
-  const [estimatedCost, setEstimatedCost] = useState("");
-  const [notes, setNotes] = useState("");
-
-  const [editUnitId, setEditUnitId] = useState("");
-  const [editTitle, setEditTitle] = useState("");
-  const [editDescription, setEditDescription] = useState("");
-  const [editCategory, setEditCategory] = useState("general");
-  const [editFrequency, setEditFrequency] = useState("monthly");
-  const [editNextDueDate, setEditNextDueDate] = useState("");
-  const [editAssignedTo, setEditAssignedTo] = useState("");
-  const [editEstimatedCost, setEditEstimatedCost] = useState("");
-  const [editNotes, setEditNotes] = useState("");
-  const [editIsActive, setEditIsActive] = useState(true);
-
-  const { data: units } = useQuery({
-    queryKey: ["units"],
+  const { data: appointments = [], isLoading } = useQuery({
+    queryKey: ["appointments"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("units")
-        .select("id, name, property_id, properties(name)");
-      return (data as any) || [];
+      const { data, error } = await supabase.from("appointments").select("*").order("starts_at", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
     },
+    enabled: isStaff,
   });
 
-  const { data: schedules, isLoading } = useQuery({
-    queryKey: ["maintenance_schedules"],
+  const { data: attachments = [] } = useQuery({
+    queryKey: ["appointment-attachments", meeting?.id],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("maintenance_schedules")
-        .select("*, units!inner(id, name, property_id, properties!inner(id, name))")
-        .order("next_due_date", { ascending: true, nullsFirst: false });
-      return (data as any) || [];
+      const { data, error } = await supabase.from("appointment_attachments").select("*").eq("appointment_id", meeting.id).order("created_at");
+      if (error) throw error;
+      return data ?? [];
     },
+    enabled: !!meeting,
   });
-
-  const activeCount = schedules?.filter((s: any) => s.is_active).length || 0;
-  const now = new Date();
-  const todayStr = now.toISOString().split("T")[0];
-  const overdueCount = schedules?.filter((s: any) => s.is_active && s.next_due_date && s.next_due_date < todayStr).length || 0;
-  const completedThisMonth = schedules?.filter((s: any) => {
-    if (!s.last_completed_date) return false;
-    const d = new Date(s.last_completed_date);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  }).length || 0;
-
-  function resetCreateForm() {
-    setUnitId("");
-    setTitle("");
-    setDescription("");
-    setCategory("general");
-    setFrequency("monthly");
-    setNextDueDate("");
-    setAssignedTo("");
-    setEstimatedCost("");
-    setNotes("");
-  }
-
-  function getIntervalDays(freq: string): number {
-    return frequencyIntervalDays[freq] || 0;
-  }
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const intervalDays = getIntervalDays(frequency);
-      const payload: any = {
-        unit_id: unitId,
-        title,
-        description,
-        category,
-        frequency,
-        interval_days: intervalDays,
-        assigned_to: assignedTo || null,
-        estimated_cost: estimatedCost ? parseFloat(estimatedCost) : null,
-        notes: notes || null,
-        is_active: true,
-      };
-      if (frequency !== "one_time") {
-        payload.next_due_date = nextDueDate || null;
-      }
-      const { error } = await supabase.from("maintenance_schedules").insert(payload);
+      if (!form.title.trim() || !form.starts_at) throw new Error("Title and start time are required");
+      const { error } = await supabase.from("appointments").insert({
+        ...form,
+        organizer_id: user?.id,
+        organizer_email: form.organizer_email || user?.email || null,
+        ends_at: form.ends_at || null,
+        location: form.location || null,
+        agenda: form.agenda || null,
+        recurrence: form.is_recurring ? form.recurrence : null,
+      });
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["maintenance_schedules"] });
-      setCreateOpen(false);
-      resetCreateForm();
-      toast.success("Schedule created");
-    },
-    onError: (e: any) => {
-      toast.error(e.message || "Failed to create schedule");
-    },
+    onSuccess: () => { toast.success("Appointment scheduled"); setOpen(false); setForm({ ...emptyForm }); qc.invalidateQueries({ queryKey: ["appointments"] }); },
+    onError: (e: any) => toast.error(e.message || "Could not create appointment"),
   });
 
-  const updateMutation = useMutation({
+  const saveMeetingMutation = useMutation({
     mutationFn: async () => {
-      if (!editingSchedule) return;
-      const intervalDays = getIntervalDays(editFrequency);
-      const payload: any = {
-        unit_id: editUnitId,
-        title: editTitle,
-        description: editDescription,
-        category: editCategory,
-        frequency: editFrequency,
-        interval_days: intervalDays,
-        assigned_to: editAssignedTo || null,
-        estimated_cost: editEstimatedCost ? parseFloat(editEstimatedCost) : null,
-        notes: editNotes || null,
-        is_active: editIsActive,
-      };
-      if (editFrequency !== "one_time") {
-        payload.next_due_date = editNextDueDate || null;
-      } else {
-        payload.next_due_date = null;
+      if (!meeting) return;
+      const { error } = await supabase.from("appointments").update({ ...meetingNotes, status: "completed" }).eq("id", meeting.id);
+      if (error) throw error;
+      if (attachmentUrl && attachmentName) {
+        const { error: attachmentError } = await supabase.from("appointment_attachments").insert({ appointment_id: meeting.id, name: attachmentName, file_url: attachmentUrl, file_type: "uploaded" });
+        if (attachmentError) throw attachmentError;
       }
-      const { error } = await supabase
-        .from("maintenance_schedules")
-        .update(payload)
-        .eq("id", editingSchedule.id);
-      if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["maintenance_schedules"] });
-      setEditOpen(false);
-      setEditingSchedule(null);
-      toast.success("Schedule updated");
-    },
-    onError: (e: any) => {
-      toast.error(e.message || "Failed to update schedule");
-    },
+    onSuccess: () => { toast.success("Meeting record saved"); setAttachmentUrl(""); setAttachmentName(""); setMeeting(null); qc.invalidateQueries({ queryKey: ["appointments"] }); },
+    onError: (e: any) => toast.error(e.message || "Could not save meeting record"),
   });
 
-  const markCompleteMutation = useMutation({
-    mutationFn: async (schedule: any) => {
-      const today = new Date().toISOString().split("T")[0];
-      const intervalDays = schedule.interval_days || getIntervalDays(schedule.frequency);
-      let nextDue: string | null = null;
-      if (schedule.frequency !== "one_time" && intervalDays > 0) {
-        const d = new Date();
-        d.setDate(d.getDate() + intervalDays);
-        nextDue = d.toISOString().split("T")[0];
-      }
-      const { error } = await supabase
-        .from("maintenance_schedules")
-        .update({
-          last_completed_date: today,
-          next_due_date: nextDue,
-        })
-        .eq("id", schedule.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["maintenance_schedules"] });
-      toast.success("Marked as complete");
-    },
-    onError: (e: any) => {
-      toast.error(e.message || "Failed to mark complete");
-    },
+  const sendReminderMutation = useMutation({
+    mutationFn: (id: string) => sendAppointmentReminder({ data: { appointmentId: id } }),
+    onSuccess: (result) => result.success ? toast.success("Reminder sent to the recorded parties") : toast.error(result.error),
+    onError: (e: any) => toast.error(e.message || "Could not send reminder"),
   });
 
-  const toggleActiveMutation = useMutation({
-    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
-      const { error } = await supabase
-        .from("maintenance_schedules")
-        .update({ is_active: isActive })
-        .eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["maintenance_schedules"] });
-      toast.success("Status updated");
-    },
-    onError: (e: any) => {
-      toast.error(e.message || "Failed to update status");
-    },
-  });
+  const upcoming = appointments.filter((a: any) => a.status === "scheduled");
+  const recurring = appointments.filter((a: any) => a.is_recurring);
+  const completed = appointments.filter((a: any) => a.status === "completed");
 
-  function openEdit(schedule: any) {
-    setEditingSchedule(schedule);
-    setEditUnitId(schedule.unit_id);
-    setEditTitle(schedule.title);
-    setEditDescription(schedule.description || "");
-    setEditCategory(schedule.category || "general");
-    setEditFrequency(schedule.frequency || "monthly");
-    setEditNextDueDate(schedule.next_due_date?.split("T")[0] || "");
-    setEditAssignedTo(schedule.assigned_to || "");
-    setEditEstimatedCost(schedule.estimated_cost?.toString() || "");
-    setEditNotes(schedule.notes || "");
-    setEditIsActive(schedule.is_active !== false);
-    setEditOpen(true);
+  function openMeeting(item: any) {
+    setMeeting(item);
+    setMeetingNotes({ notes: item.notes || "", minutes: item.minutes || "", action_items: item.action_items || "" });
   }
 
-  function isOverdue(dueDate: string | null): boolean {
-    if (!dueDate) return false;
-    return dueDate < todayStr;
-  }
-
-  if (!isStaff) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <p className="text-muted-foreground">You do not have permission to view this page.</p>
-      </div>
-    );
-  }
+  if (!isStaff) return <div className="flex h-96 items-center justify-center text-muted-foreground">You do not have permission to view this page.</div>;
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6">
       <PageTour route="/preventative-maintenance" role={role} />
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Preventative Maintenance</h1>
-        <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) resetCreateForm(); }}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              New Schedule
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>New Maintenance Schedule</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Unit</Label>
-                <SearchableSelect
-                  value={unitId}
-                  onValueChange={setUnitId}
-                  placeholder="Select unit"
-                  options={(units ?? []).map((u: any) => ({ value: u.id, label: `${u.name} - ${u.properties?.name}` }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Title</Label>
-                <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. HVAC filter replacement" />
-              </div>
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Category</Label>
-                  <SearchableSelect
-                    value={category}
-                    onValueChange={setCategory}
-                    placeholder="Select category"
-                    options={Object.entries(categoryLabels).map(([value, label]) => ({ value, label }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Frequency</Label>
-                  <SearchableSelect
-                    value={frequency}
-                    onValueChange={(v) => { setFrequency(v); if (v === "one_time") setNextDueDate(""); }}
-                    placeholder="Select frequency"
-                    options={Object.entries(frequencyLabels).map(([value, label]) => ({ value, label }))}
-                  />
-                </div>
-              </div>
-              {frequency !== "one_time" && (
-                <div className="space-y-2">
-                  <Label>Next Due Date</Label>
-                  <Input type="date" value={nextDueDate} onChange={(e) => setNextDueDate(e.target.value)} />
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Assigned To</Label>
-                  <Input value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} placeholder="Name or role" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Estimated Cost (UGX)</Label>
-                  <Input type="number" value={estimatedCost} onChange={(e) => setEstimatedCost(e.target.value)} placeholder="0" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Notes</Label>
-                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => { setCreateOpen(false); resetCreateForm(); }}>Cancel</Button>
-              <Button onClick={() => createMutation.mutate()} disabled={!unitId || !title || createMutation.isPending}>
-                {createMutation.isPending ? "Creating..." : "Create"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+      <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-widest text-accent">Operations</p><h1 className="text-3xl font-bold">Appointments &amp; Schedules</h1><p className="mt-1 text-sm text-muted-foreground">Plan meetings, inspections, viewings, and follow-ups in one place.</p></div><Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" /> New appointment</Button></div>
+      <div className="grid gap-4 sm:grid-cols-3"><Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm">Upcoming</CardTitle><Clock3 className="h-4 w-4 text-accent" /></CardHeader><CardContent><p className="text-3xl font-bold">{upcoming.length}</p></CardContent></Card><Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm">Recurring</CardTitle><CalendarDays className="h-4 w-4 text-accent" /></CardHeader><CardContent><p className="text-3xl font-bold">{recurring.length}</p></CardContent></Card><Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm">Completed meetings</CardTitle><CheckCircle2 className="h-4 w-4 text-green-600" /></CardHeader><CardContent><p className="text-3xl font-bold">{completed.length}</p></CardContent></Card></div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-l-4 border-l-blue-500">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active Schedules</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-blue-600">{activeCount}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-red-500">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Overdue</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-red-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-red-600">{overdueCount}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-green-500">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Completed This Month</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-green-600">{completedThisMonth}</p>
-          </CardContent>
-        </Card>
-      </div>
+      <Tabs defaultValue="appointments" className="space-y-4"><TabsList><TabsTrigger value="appointments">Appointments</TabsTrigger><TabsTrigger value="schedules">Schedules</TabsTrigger><TabsTrigger value="meetings">Meeting records</TabsTrigger></TabsList>
+        <TabsContent value="appointments" className="space-y-3">{isLoading && <p className="text-sm text-muted-foreground">Loading appointments...</p>}{!isLoading && appointments.length === 0 && <Card><CardContent className="py-12 text-center text-sm text-muted-foreground"><CalendarDays className="mx-auto mb-3 h-10 w-10 opacity-40" />No appointments yet. Create the first one.</CardContent></Card>}{appointments.map((item: any) => <Card key={item.id}><CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold">{item.title}</h3><Badge variant={item.status === "completed" ? "default" : item.status === "cancelled" ? "destructive" : "secondary"}>{item.status}</Badge>{item.is_recurring && <Badge variant="outline">{item.recurrence}</Badge>}</div><p className="mt-1 text-sm text-muted-foreground">{new Date(item.starts_at).toLocaleString()} {item.location ? `· ${item.location}` : ""}</p><p className="mt-1 text-xs text-muted-foreground">{item.party_one_name || item.party_one_email || "First party"} {item.party_two_name || item.party_two_email ? `and ${item.party_two_name || item.party_two_email}` : ""}</p></div><div className="flex shrink-0 gap-2"><Button variant="outline" size="sm" onClick={() => openMeeting(item)}><FileText className="mr-1 h-4 w-4" /> Record</Button><Button variant="ghost" size="sm" onClick={() => sendReminderMutation.mutate(item.id)} disabled={sendReminderMutation.isPending}><Mail className="mr-1 h-4 w-4" /> Remind</Button></div></CardContent></Card>)}</TabsContent>
+        <TabsContent value="schedules" className="space-y-3"><Card><CardHeader><CardTitle className="text-base">Recurring schedules</CardTitle></CardHeader><CardContent className="space-y-3">{recurring.length === 0 ? <p className="text-sm text-muted-foreground">No recurring schedules have been created.</p> : recurring.map((item: any) => <div key={item.id} className="flex items-center justify-between border-b pb-3 last:border-0"><div><p className="font-medium">{item.title}</p><p className="text-xs text-muted-foreground">{item.recurrence} · next occurrence {new Date(item.starts_at).toLocaleDateString()}</p></div><Badge variant="outline">Active</Badge></div>)}</CardContent></Card></TabsContent>
+        <TabsContent value="meetings" className="space-y-3"><Card><CardHeader><CardTitle className="text-base">Meeting records</CardTitle></CardHeader><CardContent className="space-y-3">{completed.length === 0 ? <p className="text-sm text-muted-foreground">Completed appointments with minutes will appear here.</p> : completed.map((item: any) => <button key={item.id} className="flex w-full items-center justify-between border-b pb-3 text-left last:border-0" onClick={() => openMeeting(item)}><div><p className="font-medium">{item.title}</p><p className="text-xs text-muted-foreground">{new Date(item.starts_at).toLocaleDateString()} · {item.minutes ? "Minutes recorded" : "No minutes yet"}</p></div><FileText className="h-4 w-4 text-muted-foreground" /></button>)}</CardContent></Card></TabsContent>
+      </Tabs>
 
-      <EntityCardGrid
-        data={schedules}
-        isLoading={isLoading}
-        searchFields={["title", "unit", "property", "assigned_to"]}
-        keyExtractor={(item) => item.id}
-        titleField="title"
-        subtitleField="unit"
-        statusField="status"
-        metricFields={[
-          { key: "frequency", label: "Frequency" },
-          { key: "next_due_date", label: "Next Due", format: "date" },
-          { key: "estimated_cost", label: "Est. Cost", format: "currency" },
-        ]}
-        emptyMessage="No schedules found"
-        cardActions={(s) => (
-          <>
-            {s.is_active && s.next_due_date && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2 text-xs"
-                onClick={() => markCompleteMutation.mutate(s)}
-                disabled={markCompleteMutation.isPending}
-                title="Mark Complete"
-              >
-                <CheckCircle className="h-3 w-3 text-green-600" />
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs"
-              onClick={() => openEdit(s)}
-              title="Edit"
-            >
-              <Pencil className="h-3 w-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs"
-              onClick={() => toggleActiveMutation.mutate({ id: s.id, isActive: !s.is_active })}
-              title={s.is_active ? "Deactivate" : "Activate"}
-            >
-              {s.is_active ? (
-                <ToggleRight className="h-3 w-3 text-muted-foreground" />
-              ) : (
-                <ToggleLeft className="h-3 w-3 text-green-600" />
-              )}
-            </Button>
-          </>
-        )}
-      />
+      <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"><DialogHeader><DialogTitle>New appointment or schedule</DialogTitle></DialogHeader><div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2 sm:col-span-2"><Label>Title *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Landlord review meeting" /></div><div className="space-y-2"><Label>Type</Label><select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={form.appointment_type} onChange={(e) => setForm({ ...form, appointment_type: e.target.value })}><option value="meeting">Meeting</option><option value="inspection">Inspection</option><option value="viewing">Property viewing</option><option value="handover">Handover</option><option value="follow_up">Follow-up</option></select></div><div className="space-y-2"><Label>Starts *</Label><Input type="datetime-local" value={form.starts_at} onChange={(e) => setForm({ ...form, starts_at: e.target.value })} /></div><div className="space-y-2"><Label>Ends</Label><Input type="datetime-local" value={form.ends_at} onChange={(e) => setForm({ ...form, ends_at: e.target.value })} /></div><div className="space-y-2"><Label>Location</Label><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Office, site, phone, or video link" /></div><div className="space-y-2 sm:col-span-2"><Label>Agenda</Label><Textarea value={form.agenda} onChange={(e) => setForm({ ...form, agenda: e.target.value })} placeholder="Topics to cover" rows={3} /></div><div className="space-y-2"><Label>First party name</Label><Input value={form.party_one_name} onChange={(e) => setForm({ ...form, party_one_name: e.target.value })} /></div><div className="space-y-2"><Label>First party email</Label><Input type="email" value={form.party_one_email} onChange={(e) => setForm({ ...form, party_one_email: e.target.value })} /></div><div className="space-y-2"><Label>Second party name</Label><Input value={form.party_two_name} onChange={(e) => setForm({ ...form, party_two_name: e.target.value })} /></div><div className="space-y-2"><Label>Second party email</Label><Input type="email" value={form.party_two_email} onChange={(e) => setForm({ ...form, party_two_email: e.target.value })} /></div><div className="flex items-center gap-2 sm:col-span-2"><input id="recurring" type="checkbox" checked={form.is_recurring} onChange={(e) => setForm({ ...form, is_recurring: e.target.checked })} /><Label htmlFor="recurring">Make this a recurring schedule</Label>{form.is_recurring && <select className="h-9 rounded-md border bg-background px-2 text-sm" value={form.recurrence} onChange={(e) => setForm({ ...form, recurrence: e.target.value })}><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option></select>}</div></div><DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>{createMutation.isPending ? "Creating..." : "Create appointment"}</Button></DialogFooter></DialogContent></Dialog>
 
-      <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) setEditingSchedule(null); }}>
-        <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Schedule</DialogTitle>
-          </DialogHeader>
-          {editingSchedule && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Unit</Label>
-                <SearchableSelect
-                  value={editUnitId}
-                  onValueChange={setEditUnitId}
-                  placeholder="Select unit"
-                  options={(units ?? []).map((u: any) => ({ value: u.id, label: `${u.name} - ${u.properties?.name}` }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Title</Label>
-                <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Category</Label>
-                  <SearchableSelect
-                    value={editCategory}
-                    onValueChange={setEditCategory}
-                    placeholder="Select category"
-                    options={Object.entries(categoryLabels).map(([value, label]) => ({ value, label }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Frequency</Label>
-                  <SearchableSelect
-                    value={editFrequency}
-                    onValueChange={(v) => { setEditFrequency(v); if (v === "one_time") setEditNextDueDate(""); }}
-                    placeholder="Select frequency"
-                    options={Object.entries(frequencyLabels).map(([value, label]) => ({ value, label }))}
-                  />
-                </div>
-              </div>
-              {editFrequency !== "one_time" && (
-                <div className="space-y-2">
-                  <Label>Next Due Date</Label>
-                  <Input type="date" value={editNextDueDate} onChange={(e) => setEditNextDueDate(e.target.value)} />
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Assigned To</Label>
-                  <Input value={editAssignedTo} onChange={(e) => setEditAssignedTo(e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Estimated Cost (UGX)</Label>
-                  <Input type="number" value={editEstimatedCost} onChange={(e) => setEditEstimatedCost(e.target.value)} placeholder="0" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Notes</Label>
-                <Textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} />
-              </div>
-              <div className="flex items-center gap-2 pt-2">
-                <Label>Active</Label>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setEditIsActive(!editIsActive)}
-                >
-                  {editIsActive ? (
-                    <><ToggleRight className="h-4 w-4 mr-1 text-green-600" /> Active</>
-                  ) : (
-                    <><ToggleLeft className="h-4 w-4 mr-1 text-muted-foreground" /> Inactive</>
-                  )}
-                </Button>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setEditOpen(false); setEditingSchedule(null); }}>Cancel</Button>
-            <Button onClick={() => updateMutation.mutate()} disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? "Saving..." : "Save Changes"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Dialog open={!!meeting} onOpenChange={(value) => !value && setMeeting(null)}><DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"><DialogHeader><DialogTitle>Meeting record: {meeting?.title}</DialogTitle></DialogHeader><div className="space-y-4"><div className="rounded-md border bg-muted/30 p-3 text-sm"><p><strong>Agenda:</strong> {meeting?.agenda || "No agenda recorded"}</p><p className="mt-1 text-muted-foreground">{meeting && new Date(meeting.starts_at).toLocaleString()} · {meeting?.location || "No location"}</p></div><div className="space-y-2"><Label>Notes from the meeting</Label><Textarea rows={5} value={meetingNotes.notes} onChange={(e) => setMeetingNotes({ ...meetingNotes, notes: e.target.value })} /></div><div className="space-y-2"><Label>Minutes / decisions</Label><Textarea rows={5} value={meetingNotes.minutes} onChange={(e) => setMeetingNotes({ ...meetingNotes, minutes: e.target.value })} placeholder="Record what took place and decisions made" /></div><div className="space-y-2"><Label>Action items</Label><Textarea rows={4} value={meetingNotes.action_items} onChange={(e) => setMeetingNotes({ ...meetingNotes, action_items: e.target.value })} placeholder="Action, owner, due date" /></div><div className="space-y-2"><Label>Support files</Label>{attachments.map((file: any) => <a key={file.id} href={file.file_url} target="_blank" rel="noreferrer" className="block text-sm text-accent hover:underline">{file.name}</a>)}<Input value={attachmentName} onChange={(e) => setAttachmentName(e.target.value)} placeholder="File name" /><FileUpload value={attachmentUrl} onChange={setAttachmentUrl} label="Upload meeting file" maxSizeMB={10} /></div></div><DialogFooter><Button variant="outline" onClick={() => setMeeting(null)}>Close</Button><Button onClick={() => saveMeetingMutation.mutate()} disabled={saveMeetingMutation.isPending}><Save className="mr-2 h-4 w-4" /> Save meeting record</Button></DialogFooter></DialogContent></Dialog>
     </div>
   );
 }

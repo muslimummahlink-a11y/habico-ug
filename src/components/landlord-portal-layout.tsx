@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { LayoutDashboard, Building2, Users, FileText, DollarSign, Wrench, CreditCard, Settings, Home } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PortalFeedback } from "@/components/portal-feedback";
 
 const landlordNavItems = [
   { href: "/landlord/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -80,6 +81,7 @@ export function LandlordPortalLayout() {
         </header>
 
         <main className="p-4 lg:p-6">
+          <PortalFeedback />
           <Outlet />
         </main>
       </div>

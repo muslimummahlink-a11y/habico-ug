@@ -15,6 +15,7 @@ import { ResponsiveDialog } from "@/components/responsive-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { SiteHeader } from "@/components/site-header";
 import { VisitAdPopup } from "@/components/visit-ad-popup";
+import { PropertyReviews } from "@/components/property-reviews";
 import { toast } from "sonner";
 import {
   Building2, MapPin, Home, Bath, Bed, Search, SlidersHorizontal,
@@ -127,7 +128,7 @@ function RentPage() {
       setAppForm((f) => ({ ...f, full_name: user.user_metadata?.full_name ?? "", email: user.email ?? "" }));
       setShowAppForm(true);
     } else {
-      nav({ to: "/auth", search: { mode: "signup", redirect: "/rent" } });
+      nav({ to: "/auth", search: { redirect: "/rent" } });
     }
   }
 
@@ -449,6 +450,7 @@ function RentPage() {
                     </div>
                   )}
                 </div>
+                <PropertyReviews propertyId={propDetail.id} />
               </div>
             </>
           )}

@@ -38,7 +38,7 @@ const routeFeatureMap: Record<string, string[]> = {
   sop: ["/sop", "/sop-checklists", "/sop-forms", "/cost-codes"],
   reports: ["/reports", "/financial-reports"],
   companies: ["/companies", "/subscription-plans"],
-  system: ["/pending-registrations", "/payment-settings", "/account-reset", "/dev-tools"],
+  system: ["/pending-registrations", "/payment-settings", "/dev-tools"],
   settings: ["/settings"],
 };
 
@@ -202,11 +202,30 @@ function AuthLayout() {
   const role = useHighestRole();
   const ws = getWorkspace(role);
   const nav = useNavigate();
+  const location = useLocation();
   const WsIcon = ws.icon;
 
   useEffect(() => {
     if (!loading && !user) nav({ to: "/auth" });
   }, [loading, user, nav]);
+
+  const { data: pageAccess } = useQuery({
+    queryKey: ["user-page-access", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase.from("user_page_access").select("route").eq("user_id", user.id);
+      if (error) return [];
+      return (data ?? []).map((item: any) => item.route) as string[];
+    },
+    enabled: !!user?.id && role !== "admin",
+  });
+
+  useEffect(() => {
+    if (!loading && user && role !== "admin" && pageAccess && pageAccess.length > 0) {
+      const allowed = pageAccess.some((route) => location.pathname === route || (route !== "/dashboard" && location.pathname.startsWith(route)));
+      if (!allowed) nav({ to: "/dashboard" });
+    }
+  }, [loading, user, role, pageAccess, location.pathname, nav]);
 
   if (loading || !user) {
     return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Loading your portal…</div>;
@@ -226,7 +245,7 @@ function AuthLayout() {
           <AppSidebar />
           <div className="flex flex-1 flex-col">
             <header
-              className="flex h-14 items-center gap-3 border-b px-4 backdrop-blur"
+              className="relative z-50 flex h-14 items-center gap-3 border-b px-4 backdrop-blur"
               style={{ borderColor: "var(--color-border)", background: "var(--color-background)" }}
             >
               <SidebarTrigger />
@@ -243,7 +262,7 @@ function AuthLayout() {
                 <span className="text-muted-foreground">{ws.badge}</span>
               </div>
             </header>
-            <main className="flex-1 bg-secondary/30 p-6">
+            <main className="relative z-0 flex-1 bg-secondary/30 p-6">
               <FeatureGate>
                 <ModeGate>
                   <Outlet />

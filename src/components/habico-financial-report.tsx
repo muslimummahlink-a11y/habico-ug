@@ -483,7 +483,7 @@ export function HabicoFinancialReport({ data }: { data: FinancialReportData }) {
         {/* Fees & Deposit */}
         <div style={{ marginTop: "10px" }}>
           <p className="free-text">
-            Company fees {data.companyFeePercent}% of total collection UGX. {formatNum(data.companyFeeAmount)}/=
+            Agreed company commission: {data.companyFeePercent}% of total collection. Company fees UGX. {formatNum(data.companyFeeAmount)}/=
             ({numberToWords(data.companyFeeAmount).charAt(0).toUpperCase() + numberToWords(data.companyFeeAmount).slice(1)})
           </p>
           <p className="free-text">

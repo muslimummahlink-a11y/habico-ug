@@ -98,21 +98,37 @@ const constructionFinancialItems: NavItem[] = [
   { title: "Progress Payments", url: "/progress-payments", icon: Banknote },
 ];
 
-const rentalItems: NavItem[] = [
+const rentalPortfolioItems: NavItem[] = [
   { title: "Properties", url: "/properties", icon: Building2 },
   { title: "Landlords", url: "/landlords", icon: Landmark },
+];
+
+const rentalPeopleItems: NavItem[] = [
   { title: "Leases", url: "/leases", icon: FileText },
   { title: "Tenants", url: "/tenants", icon: Users },
+  { title: "E-Leasing", url: "/e-leasing", icon: FileSignature },
+  { title: "ID Cards", url: "/rental-id-cards", icon: CreditCard },
+];
+
+const rentalFinanceItems: NavItem[] = [
   { title: "Payments", url: "/payments", icon: Receipt },
   { title: "Recurring Billing", url: "/recurring-billing", icon: Repeat },
   { title: "Payment Proofs", url: "/payment-proofs", icon: ShieldCheck },
+  { title: "Tax Dashboard", url: "/rental-tax-dashboard", icon: Calculator },
+];
+
+const rentalOperationsItems: NavItem[] = [
   { title: "Messages", url: "/rental-messages", icon: MessageSquare },
-  { title: "E-Leasing", url: "/e-leasing", icon: FileSignature },
-  { title: "ID Cards", url: "/rental-id-cards", icon: CreditCard },
   { title: "Listing Banners", url: "/listing-banners", icon: QrCode },
   { title: "Maintenance", url: "/maintenance", icon: Wrench },
-  { title: "Preventative Maintenance", url: "/preventative-maintenance", icon: CalendarCheck },
-  { title: "Tax Dashboard", url: "/rental-tax-dashboard", icon: Calculator },
+  { title: "Appointments & Schedules", url: "/preventative-maintenance", icon: CalendarCheck },
+];
+
+const rentalItems: NavItem[] = [
+  ...rentalPortfolioItems,
+  ...rentalPeopleItems,
+  ...rentalFinanceItems,
+  ...rentalOperationsItems,
 ];
 
 const servicesItems: NavItem[] = [
@@ -134,16 +150,28 @@ const reportItems: NavItem[] = [
   { title: "Construction Finance", url: "/construction-finance", icon: HardHatIcon, feature: "construction" },
 ];
 
-const administrationItems: NavItem[] = [
-  { title: "Companies", url: "/companies", icon: Building },
-  { title: "Subscription Plans", url: "/subscription-plans", icon: Crown },
-  { title: "Vendor Payments", url: "/vendor-payments", icon: CircleDollarSign },
+const contentApprovalItems: NavItem[] = [
+  { title: "Feedback Moderation", url: "/feedback", icon: MessageSquareQuote },
   { title: "Pending Registrations", url: "/pending-registrations", icon: Clock },
   { title: "Pending Listings", url: "/pending-listings", icon: ClipboardList },
   { title: "Land Inquiries", url: "/land-inquiries", icon: MessageSquare },
+];
+
+const companyBillingItems: NavItem[] = [
+  { title: "Companies", url: "/companies", icon: Building },
+  { title: "Subscription Plans", url: "/subscription-plans", icon: Crown },
+  { title: "Vendor Payments", url: "/vendor-payments", icon: CircleDollarSign },
   { title: "Payment Settings", url: "/payment-settings", icon: Smartphone },
-  { title: "Account Reset", url: "/account-reset", icon: KeyRound },
+];
+
+const systemAccessItems: NavItem[] = [
   { title: "Dev Tools", url: "/dev-tools", icon: Settings },
+];
+
+const administrationItems: NavItem[] = [
+  ...contentApprovalItems,
+  ...companyBillingItems,
+  ...systemAccessItems,
 ];
 
 // ─── FULL NAV (ADMIN / MANAGER) ────────────────────────────────────
@@ -156,13 +184,19 @@ const fullNav: WorkspaceNav = {
     { label: "Quality & Safety", items: qualitySafetyItems, feature: "construction" },
     { label: "Team & Resources", items: teamResourcesItems, feature: "construction" },
     { label: "Construction Financial", items: constructionFinancialItems, feature: "construction_financial" },
-    { label: "Rental Management", items: rentalItems, feature: "rental" },
+    { label: "Portfolio", items: rentalPortfolioItems, feature: "rental" },
+    { label: "People & Agreements", items: rentalPeopleItems, feature: "rental" },
+    { label: "Rent & Finance", items: rentalFinanceItems, feature: "rental" },
+    { label: "Property Operations", items: rentalOperationsItems, feature: "rental" },
     { label: "Services", items: servicesItems, feature: "move_service" },
     { label: "Standards & Compliance", items: sopItems, feature: "sop" },
     { label: "Reports", items: reportItems, feature: "reports" },
-    { label: "Administration", items: administrationItems },
+    { label: "Content & Approvals", items: contentApprovalItems },
+    { label: "Company & Billing", items: companyBillingItems },
+    { label: "System Access", items: systemAccessItems },
   ],
   extraItems: [
+    { title: "Help", url: "/help", icon: BookOpen },
     { title: "Settings", url: "/settings", icon: Settings, feature: "settings" },
   ],
 };
@@ -174,6 +208,7 @@ const allNavItems = [
   ...teamResourcesItems, ...constructionFinancialItems, ...rentalItems,
   ...servicesItems, ...sopItems, ...reportItems, ...administrationItems,
   { title: "Dashboard", url: "/dashboard", icon: Home },
+  { title: "Help", url: "/help", icon: BookOpen },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 const allowedAll = allNavItems.map((i) => i.url);
@@ -182,6 +217,7 @@ const constructionNavItems = [
   ...businessDevelopmentItems, ...projectManagementItems, ...qualitySafetyItems,
   ...teamResourcesItems, ...constructionFinancialItems, ...sopItems, ...reportItems,
   { title: "Dashboard", url: "/dashboard", icon: Home },
+  { title: "Help", url: "/help", icon: BookOpen },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 const allowedConstruction = constructionNavItems.map((i) => i.url);
@@ -189,6 +225,7 @@ const allowedConstruction = constructionNavItems.map((i) => i.url);
 const rentalNavItems = [
   ...rentalItems, ...servicesItems,
   { title: "Dashboard", url: "/dashboard", icon: Home },
+  { title: "Help", url: "/help", icon: BookOpen },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 const allowedRental = rentalNavItems.map((i) => i.url);

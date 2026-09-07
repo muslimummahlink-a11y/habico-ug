@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Building2, Plus, Trash2, Landmark, KeyRound, Copy, Printer, Check, X, Pencil } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { createLandlord } from "@/lib/createLandlord.functions";
 import { resetLandlordPassword } from "@/lib/resetLandlordPassword.functions";
@@ -28,7 +27,7 @@ interface OwnerWithProfile {
   email: string;
   phone: string;
   propertyCount: number;
-  properties: { id: string; name: string }[];
+  properties: { id: string; name: string; commissionPercent: number }[];
 }
 
 function LandlordsPage() {
@@ -47,7 +46,7 @@ function LandlordsPage() {
 
       const [profilesRes, propsRes] = await Promise.all([
         supabase.from("profiles").select("*").in("id", ids),
-        supabase.from("properties").select("id,name,owner_id").in("owner_id", ids),
+        supabase.from("properties").select("id,name,owner_id,landlord_share_percent").in("owner_id", ids),
       ]);
 
       const profiles = (profilesRes.data as any[]) ?? [];
@@ -61,7 +60,11 @@ function LandlordsPage() {
           email: p.email ?? "",
           phone: p.phone ?? "",
           propertyCount: ownerProps.length,
-          properties: ownerProps.map((pr: any) => ({ id: pr.id, name: pr.name })),
+          properties: ownerProps.map((pr: any) => ({
+            id: pr.id,
+            name: pr.name,
+            commissionPercent: 100 - Number(pr.landlord_share_percent ?? 90),
+          })),
         };
       }) as OwnerWithProfile[];
     },
@@ -275,97 +278,94 @@ function LandlordsPage() {
             <h2 className="text-lg font-bold">Landlords List — Habico</h2>
             <p className="text-sm text-muted-foreground">{landlords.length} registered landlord{landlords.length === 1 ? "" : "s"}</p>
           </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead className="text-center">Properties</TableHead>
-                {isStaff && <TableHead className="text-right no-print">Actions</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {landlords.map((l) => (
-                <TableRow key={l.user_id}>
-                  <TableCell className="font-medium">
-                    {editingId === l.user_id ? (
-                      <Input value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} className="h-8 text-sm" />
-                    ) : (
-                      l.full_name || "Unnamed"
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {editingId === l.user_id ? (
-                      <Input value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} className="h-8 text-sm" />
-                    ) : (
-                      <span className="text-muted-foreground">{l.email}</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {editingId === l.user_id ? (
-                      <Input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} className="h-8 text-sm" />
-                    ) : (
-                      <span className="text-muted-foreground">{l.phone || "—"}</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className="rounded-full bg-accent/10 px-3 py-1 text-sm font-semibold text-accent print:bg-gray-200 print:text-gray-800">
-                      {l.propertyCount}
-                    </span>
-                  </TableCell>
-                  {isStaff && (
-                    <TableCell className="text-right no-print">
+          <div className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
+            {landlords.map((l) => (
+              <Card key={l.user_id} className="min-w-0 overflow-hidden shadow-sm">
+                <CardContent className="space-y-4 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-accent">Property Owner</p>
                       {editingId === l.user_id ? (
-                        <div className="flex items-center justify-end gap-1">
-                          <Button size="sm" variant="ghost" className="text-green-600"
-                            onClick={() => editMutation.mutate({ userId: l.user_id, ...editForm })}
-                            disabled={editMutation.isPending}
-                          >
-                            <Check className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={cancelEdit}>
-                            <X className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
+                        <Input value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} className="h-8 text-sm" />
                       ) : (
-                        <div className="flex items-center justify-end gap-1">
-                          <Button size="sm" variant="ghost" onClick={() => startEdit(l)}>
-                            <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                        <h3 className="break-words font-semibold">{l.full_name || "Unnamed"}</h3>
+                      )}
+                    </div>
+                    <div className="shrink-0 rounded-md bg-accent/10 px-3 py-2 text-center text-accent">
+                      <span className="block text-lg font-bold leading-none">{l.propertyCount}</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wide">Properties</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">Email</p>
+                      {editingId === l.user_id ? (
+                        <Input value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} className="h-8 text-sm" />
+                      ) : (
+                        <p className="break-words text-muted-foreground">{l.email || "—"}</p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Phone</p>
+                      {editingId === l.user_id ? (
+                        <Input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} className="h-8 text-sm" />
+                      ) : (
+                        <p className="break-words text-muted-foreground">{l.phone || "—"}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {l.properties.length > 0 && (
+                    <div className="border-t pt-3">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Linked Properties</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {l.properties.slice(0, 3).map((p) => (
+                          <span key={p.id} className="max-w-full break-words rounded-md bg-muted px-2 py-1 text-xs">{p.name} · {p.commissionPercent}% commission</span>
+                        ))}
+                        {l.properties.length > 3 && <span className="rounded-md bg-muted px-2 py-1 text-xs">+{l.properties.length - 3} more</span>}
+                      </div>
+                    </div>
+                  )}
+
+                  {isStaff && (
+                    <div className="no-print flex flex-wrap gap-1 border-t pt-3">
+                      {editingId === l.user_id ? (
+                        <>
+                          <Button size="sm" variant="ghost" className="text-green-600" onClick={() => editMutation.mutate({ userId: l.user_id, ...editForm })} disabled={editMutation.isPending}>
+                            <Check className="mr-1 h-3.5 w-3.5" />Save
                           </Button>
-                          <Button size="sm" variant="ghost" onClick={() => { setManageFor(l); setLinkPropId(""); }}>
-                            <Building2 className="h-3.5 w-3.5 mr-1" /> Properties
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => { setIssuedPw(null); setNewPw(""); setResetFor(l); }}>
-                            <KeyRound className="h-3.5 w-3.5 mr-1" /> Reset PW
-                          </Button>
+                          <Button size="sm" variant="ghost" onClick={cancelEdit}><X className="mr-1 h-3.5 w-3.5" />Cancel</Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button size="sm" variant="ghost" onClick={() => startEdit(l)}><Pencil className="mr-1 h-3.5 w-3.5" />Edit</Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setManageFor(l); setLinkPropId(""); }}><Building2 className="mr-1 h-3.5 w-3.5" />Properties</Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setIssuedPw(null); setNewPw(""); setResetFor(l); }}><KeyRound className="mr-1 h-3.5 w-3.5" />Reset PW</Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-destructive">
-                                <Trash2 className="h-3.5 w-3.5 mr-1" /> Remove
-                              </Button>
+                              <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-destructive"><Trash2 className="mr-1 h-3.5 w-3.5" />Remove</Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
-                              <AlertDialogHeader><AlertDialogTitle>Remove landlord?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This removes the <strong>owner</strong> role from {l.full_name || l.email}. Their profile and linked properties will not be deleted.
-                              </AlertDialogDescription></AlertDialogHeader>
-                              <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => removeMutation.mutate(l.user_id)} className="bg-destructive text-destructive-foreground">
-                                Remove Role
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                        </div>
+                              <AlertDialogHeader><AlertDialogTitle>Remove landlord?</AlertDialogTitle><AlertDialogDescription>This removes the <strong>owner</strong> role from {l.full_name || l.email}. Their profile and linked properties will not be deleted.</AlertDialogDescription></AlertDialogHeader>
+                              <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => removeMutation.mutate(l.user_id)} className="bg-destructive text-destructive-foreground">Remove Role</AlertDialogAction></AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </>
                       )}
-                    </TableCell>
+                    </div>
                   )}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="hidden">
+            {landlords.map((l) => (
+              <div key={`print-${l.user_id}`}>
+                <strong>{l.full_name || "Unnamed"}</strong> · {l.email} · {l.phone || "—"} · {l.propertyCount} properties
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

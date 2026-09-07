@@ -12,8 +12,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileUpload } from "@/components/ui/file-upload";
 import { toast } from "sonner";
-import { Palette, FileText, User, Shield, Crown, Check, X, Clock, AlertTriangle, ShieldCheck, Download, Lock, Link, RefreshCw, ExternalLink, Key, Eye, EyeOff, Plus, Trash2 } from "lucide-react";
+import { Palette, FileText, User, Users, Shield, Crown, Check, X, Clock, AlertTriangle, ShieldCheck, Download, Lock, Link, RefreshCw, ExternalLink, Key, Eye, EyeOff, Plus, Trash2, KeyRound, Loader2 } from "lucide-react";
 import { PageTour } from "@/components/page-tour";
+import { getWorkspace } from "@/lib/workspace-config";
+import { createPortalUser } from "@/lib/createPortalUser.functions";
+import { resetUserPassword } from "@/lib/resetUserPassword.functions";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Habico Portal" }] }),
@@ -21,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
 });
 
 function SettingsPage() {
-  const { user, roles } = useAuth();
+  const { user } = useAuth();
   const { data: companyId } = useCompanyId();
   const search = useSearch({ strict: false }) as { tab?: string };
   const [activeTab, setActiveTab] = useState(search.tab || "profile");
@@ -80,7 +83,7 @@ function SettingsPage() {
           {companyId && <TabsTrigger value="team"><Users className="mr-2 h-4 w-4" /> Team</TabsTrigger>}
           {companyId && <TabsTrigger value="notifications"><AlertTriangle className="mr-2 h-4 w-4" /> Notifications</TabsTrigger>}
           {companyId && <TabsTrigger value="api"><ShieldCheck className="mr-2 h-4 w-4" /> API Keys</TabsTrigger>}
-          {isSuperAdmin && <TabsTrigger value="roles"><Shield className="mr-2 h-4 w-4" /> Roles</TabsTrigger>}
+          {isSuperAdmin && <TabsTrigger value="accounts"><Users className="mr-2 h-4 w-4" /> Accounts &amp; Access</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="profile" className="space-y-4 pt-4">
@@ -105,20 +108,7 @@ function SettingsPage() {
 
         {companyId && <ApiKeysTab companyId={companyId} />}
 
-        {isSuperAdmin && (
-          <TabsContent value="roles" className="space-y-4 pt-4">
-            <Card>
-              <CardHeader><CardTitle className="display">Roles</CardTitle></CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {roles.length === 0 ? <span className="text-sm text-muted-foreground">No roles assigned.</span> :
-                    roles.map((r) => <span key={r} className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">{r}</span>)}
-                </div>
-                <p className="mt-3 text-xs text-muted-foreground">New accounts start as tenant. A Habico manager will upgrade your role to owner or staff as needed.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        )}
+        {isSuperAdmin && <AccountsAccessTab />}
 
         {companyId && <TemplatesTab companyId={companyId} />}
         {companyId && <PlanTab companyId={companyId} />}
@@ -126,6 +116,94 @@ function SettingsPage() {
         {companyId && <IntegrationTab companyId={companyId} />}
       </Tabs>
     </div>
+  );
+}
+
+function AccountsAccessTab() {
+  const qc = useQueryClient();
+  const pages = Array.from(new Map(
+    getWorkspace("admin").nav.groups.flatMap((group) => group.items).concat(getWorkspace("admin").nav.extraItems ?? [])
+      .map((item) => [item.url, { url: item.url, title: item.title }]),
+  ).values());
+  const [form, setForm] = useState({ full_name: "", email: "", phone: "", password: "", role: "staff" as "staff" | "manager" | "owner" | "tenant", routes: ["/dashboard", "/settings"] });
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetResult, setResetResult] = useState<string | null>(null);
+
+  const createMutation = useMutation({
+    mutationFn: () => createPortalUser({ data: form }),
+    onSuccess: (result) => {
+      if (!result.success) throw new Error(result.error);
+      toast.success("Portal account created");
+      setForm({ full_name: "", email: "", phone: "", password: "", role: "staff", routes: ["/dashboard", "/settings"] });
+      qc.invalidateQueries({ queryKey: ["user-page-access"] });
+    },
+    onError: (error: any) => toast.error(error.message || "Could not create account"),
+  });
+
+  const resetMutation = useMutation({
+    mutationFn: () => resetUserPassword({ data: { email: resetEmail, password: resetPassword } }),
+    onSuccess: (result) => {
+      if (!result.success) throw new Error(result.error);
+      setResetResult(result.password);
+      setResetPassword("");
+      toast.success("Password reset");
+    },
+    onError: (error: any) => toast.error(error.message || "Could not reset password"),
+  });
+
+  function toggleRoute(route: string) {
+    setForm((current) => ({
+      ...current,
+      routes: current.routes.includes(route) ? current.routes.filter((item) => item !== route) : [...current.routes, route],
+    }));
+  }
+
+  return (
+    <TabsContent value="accounts" className="space-y-4 pt-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="display">Create Portal Account</CardTitle>
+          <p className="text-sm text-muted-foreground">Create a user and choose the pages they can access after signing in.</p>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2"><Label>Full name *</Label><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Email *</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Initial password</Label><Input value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Leave blank to generate" /></div>
+            <div className="space-y-2 sm:col-span-2"><Label>Role</Label><select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as typeof form.role })}><option value="staff">Staff</option><option value="manager">Manager</option><option value="owner">Landlord / Owner</option><option value="tenant">Tenant</option></select></div>
+          </div>
+
+          <div className="space-y-3">
+            <div><Label>Page access</Label><p className="text-xs text-muted-foreground">Select the pages this user may open. Dashboard and Settings are selected by default.</p></div>
+            <div className="grid max-h-72 gap-2 overflow-y-auto rounded-md border p-3 sm:grid-cols-2">
+              {pages.map((page) => (
+                <label key={page.url} className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted">
+                  <input type="checkbox" checked={form.routes.includes(page.url)} onChange={() => toggleRoute(page.url)} />
+                  <span>{page.title}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+          <Button onClick={() => createMutation.mutate()} disabled={!form.full_name || !form.email || createMutation.isPending}>
+            {createMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />} Create Account
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="display flex items-center gap-2"><KeyRound className="h-4 w-4" /> Reset Account Password</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2"><Label>Account email</Label><Input type="email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="user@example.com" /></div>
+            <div className="space-y-2"><Label>New password</Label><Input value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} placeholder="Leave blank to generate" /></div>
+          </div>
+          <Button variant="outline" onClick={() => resetMutation.mutate()} disabled={!resetEmail || resetMutation.isPending}><KeyRound className="mr-2 h-4 w-4" /> Reset Password</Button>
+          {resetResult && <p className="rounded-md border bg-muted/40 p-3 font-mono text-sm">New password: {resetResult}</p>}
+        </CardContent>
+      </Card>
+    </TabsContent>
   );
 }
 

@@ -140,16 +140,16 @@ function PricingPage() {
             <p className="mt-2 text-muted-foreground">All prices in Ugandan Shillings (UGX). Switch to yearly and save.</p>
 
             {/* Toggle */}
-            <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-border bg-background p-1">
+            <div className="mt-6 inline-flex items-center gap-3 border border-border bg-background p-1">
               <button
                 onClick={() => setYearly(false)}
-                className={`rounded-full px-5 py-2 text-sm font-medium transition ${!yearly ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                className={`px-5 py-2 text-sm font-medium transition ${!yearly ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               >
                 Monthly
               </button>
               <button
                 onClick={() => setYearly(true)}
-                className={`rounded-full px-5 py-2 text-sm font-medium transition ${yearly ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                className={`px-5 py-2 text-sm font-medium transition ${yearly ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               >
                 Yearly
                 <span className="ml-1.5 rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold uppercase text-accent">Save ~17%</span>

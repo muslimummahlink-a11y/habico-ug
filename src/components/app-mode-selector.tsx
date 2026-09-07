@@ -18,7 +18,7 @@ export function AppModeSelector() {
   function handleSelect(mode: AppMode) {
     setMode(mode);
     if (mode === "landlord") {
-      nav({ to: "/auth", search: { mode: "signup" } });
+      nav({ to: "/auth" });
     } else if (mode === "company") {
       nav({ to: "/auth", search: { mode: "signin" } });
     } else {

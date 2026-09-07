@@ -75,7 +75,7 @@ function PropertiesPage() {
   const [editingProp, setEditingProp] = useState<any>(null);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [form, setForm] = useState({ name: "", address: "", location: "", city: "", property_type: "residential", description: "", image_url: "", owner_id: "", landlord_share_percent: "90" });
+  const [form, setForm] = useState({ name: "", address: "", location: "", city: "", property_type: "residential", description: "", image_url: "", owner_id: "", landlord_share_percent: "10" });
   const [unitOpen, setUnitOpen] = useState(false);
   const [editUnitOpen, setEditUnitOpen] = useState(false);
   const [editingUnit, setEditingUnit] = useState<any>(null);
@@ -122,12 +122,13 @@ function PropertiesPage() {
 
   const create = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("properties").insert({ ...form, owner_id: form.owner_id || null, property_type: form.property_type || "residential", landlord_share_percent: Number(form.landlord_share_percent) || 90 });
+      const commissionPercent = Math.min(100, Math.max(0, Number(form.landlord_share_percent) || 10));
+      const { error } = await supabase.from("properties").insert({ ...form, owner_id: form.owner_id || null, property_type: form.property_type || "residential", landlord_share_percent: 100 - commissionPercent });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Property created"); setOpen(false);
-      setForm({ name: "", address: "", location: "", city: "", property_type: "residential", description: "", image_url: "", owner_id: "", landlord_share_percent: "90" });
+      setForm({ name: "", address: "", location: "", city: "", property_type: "residential", description: "", image_url: "", owner_id: "", landlord_share_percent: "10" });
       qc.invalidateQueries({ queryKey: ["properties"] });
       if (user) createNotification(user.id, "Property created",
         form.name || "New property", "/properties", "info");
@@ -138,7 +139,8 @@ function PropertiesPage() {
   const update = useMutation({
     mutationFn: async () => {
       if (!editingProp) return;
-      const { error } = await supabase.from("properties").update({ ...form, owner_id: form.owner_id || null, landlord_share_percent: Number(form.landlord_share_percent) || 90 }).eq("id", editingProp.id);
+      const commissionPercent = Math.min(100, Math.max(0, Number(form.landlord_share_percent) || 10));
+      const { error } = await supabase.from("properties").update({ ...form, owner_id: form.owner_id || null, landlord_share_percent: 100 - commissionPercent }).eq("id", editingProp.id);
       if (error) throw error;
     },
     onSuccess: () => { toast.success("Property updated"); setEditOpen(false); setEditingProp(null); qc.invalidateQueries({ queryKey: ["properties"] }); },
@@ -274,7 +276,7 @@ function PropertiesPage() {
 
   function openEdit(p: any) {
     setEditingProp(p);
-    setForm({ name: p.name, address: p.address ?? "", location: p.location ?? "", city: (p as any).city ?? "", property_type: p.property_type ?? "residential", description: p.description ?? "", image_url: p.image_url ?? "", owner_id: p.owner_id ?? "", landlord_share_percent: String(p.landlord_share_percent ?? 90) });
+    setForm({ name: p.name, address: p.address ?? "", location: p.location ?? "", city: (p as any).city ?? "", property_type: p.property_type ?? "residential", description: p.description ?? "", image_url: p.image_url ?? "", owner_id: p.owner_id ?? "", landlord_share_percent: String(100 - Number(p.landlord_share_percent ?? 90)) });
     setEditOpen(true);
   }
 
@@ -332,16 +334,16 @@ function PropertiesPage() {
                       <p className="mt-1 text-xs text-muted-foreground">Select the landlord who owns this property. Landlords must have an account with the <strong>owner</strong> role.</p>
                     </div>
                     <div>
-                      <Label>Landlord Share (%)</Label>
+                      <Label>Company Commission (%)</Label>
                       <Input
                         type="number"
                         min="0"
                         max="100"
                         value={form.landlord_share_percent}
                         onChange={(e) => setForm({ ...form, landlord_share_percent: e.target.value })}
-                        placeholder="90"
+                        placeholder="10"
                       />
-                      <p className="mt-1 text-xs text-muted-foreground">Percentage of collected rent that goes to the landlord. The company retains the difference as commission.</p>
+                      <p className="mt-1 text-xs text-muted-foreground">The agreed percentage of collected rent retained by Habico. The landlord receives the remaining balance.</p>
                     </div>
                   </div>
                 </div>
@@ -424,16 +426,16 @@ function PropertiesPage() {
                     <p className="mt-1 text-xs text-muted-foreground">Select the landlord who owns this property. Landlords must have an account with the <strong>owner</strong> role.</p>
                   </div>
                   <div>
-                    <Label>Landlord Share (%)</Label>
+                    <Label>Company Commission (%)</Label>
                     <Input
                       type="number"
                       min="0"
                       max="100"
                       value={form.landlord_share_percent}
                       onChange={(e) => setForm({ ...form, landlord_share_percent: e.target.value })}
-                      placeholder="90"
+                      placeholder="10"
                     />
-                    <p className="mt-1 text-xs text-muted-foreground">Percentage of collected rent that goes to the landlord. The company retains the difference as commission.</p>
+                    <p className="mt-1 text-xs text-muted-foreground">The agreed percentage of collected rent retained by Habico. The landlord receives the remaining balance.</p>
                   </div>
                 </div>
               </div>

@@ -27,9 +27,9 @@ function NotificationsPage() {
   const { notifications, unread, read, unreadCount, markRead, markAllRead } = useAppNotifications();
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+    <div className="mx-auto w-full max-w-4xl space-y-6 overflow-hidden p-1 sm:p-0">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-widest text-accent">Activity Feed</p>
           <h1 className="display text-3xl font-bold">Notifications</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -41,7 +41,7 @@ function NotificationsPage() {
           </p>
         </div>
         {unreadCount > 0 && (
-          <Button variant="outline" onClick={() => markAllRead.mutate()} disabled={markAllRead.isPending}>
+          <Button className="w-full sm:w-auto" variant="outline" onClick={() => markAllRead.mutate()} disabled={markAllRead.isPending}>
             <CheckCheck className="mr-2 h-4 w-4" />Mark all read
           </Button>
         )}
@@ -59,20 +59,20 @@ function NotificationsPage() {
             {unread.map((n) => {
               const Icon = typeIcons[n.type] ?? Info;
               return (
-                <div key={n.id} className="flex items-start justify-between rounded-lg border border-border p-3">
-                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                <div key={n.id} className="flex min-w-0 flex-col gap-3 rounded-lg border border-border p-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex min-w-0 flex-1 items-start gap-3">
                     <Icon className={`mt-1 h-4 w-4 shrink-0 ${typeColors[n.type] ?? "text-muted-foreground"}`} />
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm">{n.title}</p>
+                    <div className="min-w-0 max-w-full overflow-hidden">
+                      <p className="break-words text-sm font-medium">{n.title}</p>
                       {n.description && (
-                        <p className="text-xs text-muted-foreground mt-0.5">{n.description}</p>
+                        <p className="break-words text-xs text-muted-foreground mt-0.5">{n.description}</p>
                       )}
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="break-words text-xs text-muted-foreground mt-1">
                         {new Date(n.created_at).toLocaleString()}
                       </p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" className="shrink-0" onClick={() => markRead.mutate(n.id)}>
+                  <Button variant="ghost" size="sm" className="self-end sm:shrink-0" onClick={() => markRead.mutate(n.id)}>
                     <CheckCircle className="h-4 w-4" />
                   </Button>
                 </div>
@@ -94,12 +94,12 @@ function NotificationsPage() {
             {read.slice(0, 30).map((n) => {
               const Icon = typeIcons[n.type] ?? Info;
               return (
-                <div key={n.id} className="flex items-start gap-3 rounded-lg border border-border/50 p-3 opacity-60">
+                <div key={n.id} className="flex min-w-0 items-start gap-3 rounded-lg border border-border/50 p-3 opacity-60">
                   <Icon className={`mt-1 h-4 w-4 shrink-0 ${typeColors[n.type] ?? "text-muted-foreground"}`} />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-muted-foreground">{n.title}</p>
+                  <div className="min-w-0 max-w-full overflow-hidden">
+                    <p className="break-words text-sm font-medium text-muted-foreground">{n.title}</p>
                     {n.description && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{n.description}</p>
+                      <p className="break-words text-xs text-muted-foreground mt-0.5">{n.description}</p>
                     )}
                     <p className="text-xs text-muted-foreground mt-1">
                       {new Date(n.created_at).toLocaleString()}

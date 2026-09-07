@@ -1025,14 +1025,14 @@ const maintenanceTour: PageTourConfig = {
 
 const preventativeMaintenanceTour: PageTourConfig = {
   route: "/preventative-maintenance",
-  title: "Preventative Maintenance",
-  description: "Schedule recurring maintenance to prevent costly emergency repairs.",
+  title: "Appointments & Schedules",
+  description: "Plan appointments, recurring schedules, and meeting records for your operations team.",
   steps: [
     {
-      title: "Scheduled Maintenance",
-      content: "Set up recurring tasks like AC servicing, plumbing checks, pest control. Prevention costs 5x less than emergency repairs.",
-      example: "Schedule: AC servicing every 3 months (next: 1 April), Pest control monthly, Plumbing inspection quarterly.",
-      selector: "table",
+      title: "Operations Calendar",
+      content: "Create meetings, inspections, viewings, handovers, and follow-ups. Use recurring schedules for regular appointments.",
+      example: "Create a landlord review, record the agenda, send reminders to both parties, then save minutes and action items after the meeting.",
+      selector: "[role=tablist]",
       placement: "top",
     },
   ],

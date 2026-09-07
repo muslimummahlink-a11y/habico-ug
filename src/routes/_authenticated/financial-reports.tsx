@@ -864,106 +864,121 @@ const { data: ownerProfiles = [] } = useQuery({
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-wrap items-end gap-4">
-                {/* Property Selection */}
-                <div className="w-full md:w-max">
-                  <label className="mb-1.5 block text-sm font-medium">Property</label>
-                  {isLoadingProperties ? (
-                    <div className="w-80 max-w-full">
-                      <Skeleton className="h-9 w-full" />
-                    </div>
-                  ) : (
-                    <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
-                      <SelectTrigger className="w-80 max-w-full">
-                        <SelectValue placeholder="Select a property…" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {properties.length === 0 ? (
-                          <SelectItem value="__none" disabled>No properties found</SelectItem>
-                        ) : (
-                          properties.map((p: any) => {
-                            const label = p.owner_id ? p.name + " \u2014 " + getOwnerName(p.owner_id) : p.name;
-                            return (
-                              <SelectItem key={p.id} value={p.id}>
-                                {label}
-                              </SelectItem>
-                            );
-                          })
-                        )}
-                      </SelectContent>
-                    </Select>
-                  )}
+            <CardContent className="space-y-5">
+              <div className="rounded-2xl border border-border bg-gradient-to-br from-background via-background to-muted/20 p-5 shadow-sm">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent">Property period</p>
+                    <h3 className="mt-1 text-base font-semibold text-foreground">Set the report details</h3>
+                  </div>
+                  <div className="rounded-full border border-border bg-muted/60 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Official report
+                  </div>
                 </div>
 
-                <div className="w-32">
-                  <label className="mb-1.5 block text-sm font-medium">From Month</label>
-                  <Select value={String(reportFromMonth)} onValueChange={(v) => setReportFromMonth(Number(v))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                        <SelectItem key={m} value={String(m)}>
-                          {new Date(0, m - 1).toLocaleString("default", { month: "short" })}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="w-28">
-                  <label className="mb-1.5 block text-sm font-medium">From Year</label>
-                  <Select value={String(reportFromYear)} onValueChange={(v) => setReportFromYear(Number(v))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Array.from({ length: 10 }, (_, i) => now.getFullYear() - 5 + i).map((y) => (
-                        <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="w-32">
-                  <label className="mb-1.5 block text-sm font-medium">To Month</label>
-                  <Select value={String(reportToMonth)} onValueChange={(v) => setReportToMonth(Number(v))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                        <SelectItem key={m} value={String(m)}>
-                          {new Date(0, m - 1).toLocaleString("default", { month: "short" })}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="w-28">
-                  <label className="mb-1.5 block text-sm font-medium">To Year</label>
-                  <Select value={String(reportToYear)} onValueChange={(v) => setReportToYear(Number(v))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Array.from({ length: 10 }, (_, i) => now.getFullYear() - 5 + i).map((y) => (
-                        <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="grid gap-4 xl:grid-cols-[1.5fr_0.8fr_0.75fr_0.8fr_0.75fr]">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-foreground">Property</label>
+                    {isLoadingProperties ? (
+                      <Skeleton className="h-11 w-full rounded-xl" />
+                    ) : (
+                      <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
+                        <SelectTrigger className="h-11 w-full rounded-xl border-border bg-background shadow-sm">
+                          <SelectValue placeholder="Select a property…" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {properties.length === 0 ? (
+                            <SelectItem value="__none" disabled>No properties found</SelectItem>
+                          ) : (
+                            properties.map((p: any) => {
+                              const label = p.owner_id ? p.name + " \u2014 " + getOwnerName(p.owner_id) : p.name;
+                              return (
+                                <SelectItem key={p.id} value={p.id}>
+                                  {label}
+                                </SelectItem>
+                              );
+                            })
+                          )}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-foreground">From Month</label>
+                    <Select value={String(reportFromMonth)} onValueChange={(v) => setReportFromMonth(Number(v))}>
+                      <SelectTrigger className="h-11 rounded-xl border-border bg-background shadow-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                          <SelectItem key={m} value={String(m)}>
+                            {new Date(0, m - 1).toLocaleString("default", { month: "short" })}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-foreground">From Year</label>
+                    <Select value={String(reportFromYear)} onValueChange={(v) => setReportFromYear(Number(v))}>
+                      <SelectTrigger className="h-11 rounded-xl border-border bg-background shadow-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 10 }, (_, i) => now.getFullYear() - 5 + i).map((y) => (
+                          <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-foreground">To Month</label>
+                    <Select value={String(reportToMonth)} onValueChange={(v) => setReportToMonth(Number(v))}>
+                      <SelectTrigger className="h-11 rounded-xl border-border bg-background shadow-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                          <SelectItem key={m} value={String(m)}>
+                            {new Date(0, m - 1).toLocaleString("default", { month: "short" })}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-foreground">To Year</label>
+                    <Select value={String(reportToYear)} onValueChange={(v) => setReportToYear(Number(v))}>
+                      <SelectTrigger className="h-11 rounded-xl border-border bg-background shadow-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 10 }, (_, i) => now.getFullYear() - 5 + i).map((y) => (
+                          <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
 
-              {/* State messages */}
               {!selectedPropertyId && (
-                <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-14 text-center">
-                  <span className="rounded-full bg-muted p-4"><Landmark className="h-8 w-8 text-muted-foreground" /></span>
-                  <p className="font-semibold">Select a property</p>
-                  <p className="max-w-sm text-sm text-muted-foreground">
-                    Choose a property above to generate the official Habico financial report for the landlord.
-                  </p>
+                <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-muted/20 py-16 text-center">
+                  <span className="rounded-full bg-background p-4 shadow-sm ring-1 ring-border"><Landmark className="h-8 w-8 text-muted-foreground" /></span>
+                  <div>
+                    <p className="text-lg font-semibold text-foreground">Select a property</p>
+                    <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                      Choose a property above to generate the official Habico financial report for the landlord.
+                    </p>
+                  </div>
                 </div>
               )}
 
               {selectedPropertyId && propertyLeases.length === 0 && (
-                <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-14 text-center">
-                  <span className="rounded-full bg-muted p-4"><Building2 className="h-8 w-8 text-muted-foreground" /></span>
-                  <p className="font-semibold">No leases found</p>
-                  <p className="max-w-sm text-sm text-muted-foreground">
-                    This property has no lease records yet for the selected period.
-                  </p>
+                <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-muted/20 py-16 text-center">
+                  <span className="rounded-full bg-background p-4 shadow-sm ring-1 ring-border"><Building2 className="h-8 w-8 text-muted-foreground" /></span>
+                  <div>
+                    <p className="text-lg font-semibold text-foreground">No leases found</p>
+                    <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                      This property has no lease records yet for the selected period.
+                    </p>
+                  </div>
                 </div>
               )}
 

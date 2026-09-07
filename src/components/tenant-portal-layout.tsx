@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { PortalFeedback } from "@/components/portal-feedback";
 
 const tenantNavItems = [
   { href: "/tenant/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -165,6 +166,7 @@ export function TenantPortalLayout() {
             </div>
           )}
 
+          <PortalFeedback />
           <Outlet />
         </main>
       </div>

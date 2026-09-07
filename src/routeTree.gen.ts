@@ -9,12 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TenantRouteImport } from './routes/tenant'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as RentRouteImport } from './routes/rent'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as QboCallbackRouteImport } from './routes/qbo-callback'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as LandlordRouteImport } from './routes/landlord'
 import { Route as LandRouteImport } from './routes/land'
 import { Route as DownloadRouteImport } from './routes/download'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -24,7 +26,21 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TenantPaymentsRouteImport } from './routes/tenant.payments'
+import { Route as TenantMaintenanceRouteImport } from './routes/tenant.maintenance'
+import { Route as TenantLeaseRouteImport } from './routes/tenant.lease'
+import { Route as TenantIdCardRouteImport } from './routes/tenant.id-card'
+import { Route as TenantDocumentsRouteImport } from './routes/tenant.documents'
+import { Route as TenantDashboardRouteImport } from './routes/tenant.dashboard'
 import { Route as ServicesIdRouteImport } from './routes/services.$id'
+import { Route as LandlordTenantsRouteImport } from './routes/landlord.tenants'
+import { Route as LandlordSettingsRouteImport } from './routes/landlord.settings'
+import { Route as LandlordPropertiesRouteImport } from './routes/landlord.properties'
+import { Route as LandlordPaymentsRouteImport } from './routes/landlord.payments'
+import { Route as LandlordMaintenanceRouteImport } from './routes/landlord.maintenance'
+import { Route as LandlordFinancialReportsRouteImport } from './routes/landlord.financial-reports'
+import { Route as LandlordDocumentsRouteImport } from './routes/landlord.documents'
+import { Route as LandlordDashboardRouteImport } from './routes/landlord.dashboard'
 import { Route as AuthenticatedVendorPaymentsRouteImport } from './routes/_authenticated/vendor-payments'
 import { Route as AuthenticatedTimesheetsRouteImport } from './routes/_authenticated/timesheets'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
@@ -77,8 +93,10 @@ import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedLandlordsRouteImport } from './routes/_authenticated/landlords'
 import { Route as AuthenticatedLandInquiriesRouteImport } from './routes/_authenticated/land-inquiries'
 import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
+import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedHabicoFinanceRouteImport } from './routes/_authenticated/habico-finance'
 import { Route as AuthenticatedFinancialReportsRouteImport } from './routes/_authenticated/financial-reports'
+import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticated/feedback'
 import { Route as AuthenticatedExpensesRouteImport } from './routes/_authenticated/expenses'
 import { Route as AuthenticatedEstimatesRouteImport } from './routes/_authenticated/estimates'
 import { Route as AuthenticatedEquipmentRentalsRouteImport } from './routes/_authenticated/equipment-rentals'
@@ -98,8 +116,15 @@ import { Route as AuthenticatedBillsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedBidPackagesRouteImport } from './routes/_authenticated/bid-packages'
 import { Route as AuthenticatedAssetsRouteImport } from './routes/_authenticated/assets'
 import { Route as AuthenticatedAllowancesRouteImport } from './routes/_authenticated/allowances'
+import { Route as AuthenticatedAccountResetRouteImport } from './routes/_authenticated/account-reset'
+import { Route as LandlordPropertiesPropIdRouteImport } from './routes/landlord.properties.$propId'
 import { Route as AuthenticatedPropertiesIdRouteImport } from './routes/_authenticated/properties.$id'
 
+const TenantRoute = TenantRouteImport.update({
+  id: '/tenant',
+  path: '/tenant',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -128,6 +153,11 @@ const QboCallbackRoute = QboCallbackRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandlordRoute = LandlordRouteImport.update({
+  id: '/landlord',
+  path: '/landlord',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LandRoute = LandRouteImport.update({
@@ -174,10 +204,81 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TenantPaymentsRoute = TenantPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => TenantRoute,
+} as any)
+const TenantMaintenanceRoute = TenantMaintenanceRouteImport.update({
+  id: '/maintenance',
+  path: '/maintenance',
+  getParentRoute: () => TenantRoute,
+} as any)
+const TenantLeaseRoute = TenantLeaseRouteImport.update({
+  id: '/lease',
+  path: '/lease',
+  getParentRoute: () => TenantRoute,
+} as any)
+const TenantIdCardRoute = TenantIdCardRouteImport.update({
+  id: '/id-card',
+  path: '/id-card',
+  getParentRoute: () => TenantRoute,
+} as any)
+const TenantDocumentsRoute = TenantDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => TenantRoute,
+} as any)
+const TenantDashboardRoute = TenantDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => TenantRoute,
+} as any)
 const ServicesIdRoute = ServicesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => ServicesRoute,
+} as any)
+const LandlordTenantsRoute = LandlordTenantsRouteImport.update({
+  id: '/tenants',
+  path: '/tenants',
+  getParentRoute: () => LandlordRoute,
+} as any)
+const LandlordSettingsRoute = LandlordSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => LandlordRoute,
+} as any)
+const LandlordPropertiesRoute = LandlordPropertiesRouteImport.update({
+  id: '/properties',
+  path: '/properties',
+  getParentRoute: () => LandlordRoute,
+} as any)
+const LandlordPaymentsRoute = LandlordPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => LandlordRoute,
+} as any)
+const LandlordMaintenanceRoute = LandlordMaintenanceRouteImport.update({
+  id: '/maintenance',
+  path: '/maintenance',
+  getParentRoute: () => LandlordRoute,
+} as any)
+const LandlordFinancialReportsRoute =
+  LandlordFinancialReportsRouteImport.update({
+    id: '/financial-reports',
+    path: '/financial-reports',
+    getParentRoute: () => LandlordRoute,
+  } as any)
+const LandlordDocumentsRoute = LandlordDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => LandlordRoute,
+} as any)
+const LandlordDashboardRoute = LandlordDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => LandlordRoute,
 } as any)
 const AuthenticatedVendorPaymentsRoute =
   AuthenticatedVendorPaymentsRouteImport.update({
@@ -470,6 +571,11 @@ const AuthenticatedInventoryRoute = AuthenticatedInventoryRouteImport.update({
   path: '/inventory',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedHelpRoute = AuthenticatedHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedHabicoFinanceRoute =
   AuthenticatedHabicoFinanceRouteImport.update({
     id: '/habico-finance',
@@ -482,6 +588,11 @@ const AuthenticatedFinancialReportsRoute =
     path: '/financial-reports',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedFeedbackRoute = AuthenticatedFeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedExpensesRoute = AuthenticatedExpensesRouteImport.update({
   id: '/expenses',
   path: '/expenses',
@@ -584,6 +695,18 @@ const AuthenticatedAllowancesRoute = AuthenticatedAllowancesRouteImport.update({
   path: '/allowances',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAccountResetRoute =
+  AuthenticatedAccountResetRouteImport.update({
+    id: '/account-reset',
+    path: '/account-reset',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const LandlordPropertiesPropIdRoute =
+  LandlordPropertiesPropIdRouteImport.update({
+    id: '/$propId',
+    path: '/$propId',
+    getParentRoute: () => LandlordPropertiesRoute,
+  } as any)
 const AuthenticatedPropertiesIdRoute =
   AuthenticatedPropertiesIdRouteImport.update({
     id: '/$id',
@@ -600,12 +723,15 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/download': typeof DownloadRoute
   '/land': typeof LandRoute
+  '/landlord': typeof LandlordRouteWithChildren
   '/pricing': typeof PricingRoute
   '/qbo-callback': typeof QboCallbackRoute
   '/register': typeof RegisterRoute
   '/rent': typeof RentRoute
   '/services': typeof ServicesRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/tenant': typeof TenantRouteWithChildren
+  '/account-reset': typeof AuthenticatedAccountResetRoute
   '/allowances': typeof AuthenticatedAllowancesRoute
   '/assets': typeof AuthenticatedAssetsRoute
   '/bid-packages': typeof AuthenticatedBidPackagesRoute
@@ -625,8 +751,10 @@ export interface FileRoutesByFullPath {
   '/equipment-rentals': typeof AuthenticatedEquipmentRentalsRoute
   '/estimates': typeof AuthenticatedEstimatesRoute
   '/expenses': typeof AuthenticatedExpensesRoute
+  '/feedback': typeof AuthenticatedFeedbackRoute
   '/financial-reports': typeof AuthenticatedFinancialReportsRoute
   '/habico-finance': typeof AuthenticatedHabicoFinanceRoute
+  '/help': typeof AuthenticatedHelpRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/land-inquiries': typeof AuthenticatedLandInquiriesRoute
   '/landlords': typeof AuthenticatedLandlordsRoute
@@ -679,8 +807,23 @@ export interface FileRoutesByFullPath {
   '/tenants': typeof AuthenticatedTenantsRoute
   '/timesheets': typeof AuthenticatedTimesheetsRoute
   '/vendor-payments': typeof AuthenticatedVendorPaymentsRoute
+  '/landlord/dashboard': typeof LandlordDashboardRoute
+  '/landlord/documents': typeof LandlordDocumentsRoute
+  '/landlord/financial-reports': typeof LandlordFinancialReportsRoute
+  '/landlord/maintenance': typeof LandlordMaintenanceRoute
+  '/landlord/payments': typeof LandlordPaymentsRoute
+  '/landlord/properties': typeof LandlordPropertiesRouteWithChildren
+  '/landlord/settings': typeof LandlordSettingsRoute
+  '/landlord/tenants': typeof LandlordTenantsRoute
   '/services/$id': typeof ServicesIdRoute
+  '/tenant/dashboard': typeof TenantDashboardRoute
+  '/tenant/documents': typeof TenantDocumentsRoute
+  '/tenant/id-card': typeof TenantIdCardRoute
+  '/tenant/lease': typeof TenantLeaseRoute
+  '/tenant/maintenance': typeof TenantMaintenanceRoute
+  '/tenant/payments': typeof TenantPaymentsRoute
   '/properties/$id': typeof AuthenticatedPropertiesIdRoute
+  '/landlord/properties/$propId': typeof LandlordPropertiesPropIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -691,12 +834,15 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/download': typeof DownloadRoute
   '/land': typeof LandRoute
+  '/landlord': typeof LandlordRouteWithChildren
   '/pricing': typeof PricingRoute
   '/qbo-callback': typeof QboCallbackRoute
   '/register': typeof RegisterRoute
   '/rent': typeof RentRoute
   '/services': typeof ServicesRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/tenant': typeof TenantRouteWithChildren
+  '/account-reset': typeof AuthenticatedAccountResetRoute
   '/allowances': typeof AuthenticatedAllowancesRoute
   '/assets': typeof AuthenticatedAssetsRoute
   '/bid-packages': typeof AuthenticatedBidPackagesRoute
@@ -716,8 +862,10 @@ export interface FileRoutesByTo {
   '/equipment-rentals': typeof AuthenticatedEquipmentRentalsRoute
   '/estimates': typeof AuthenticatedEstimatesRoute
   '/expenses': typeof AuthenticatedExpensesRoute
+  '/feedback': typeof AuthenticatedFeedbackRoute
   '/financial-reports': typeof AuthenticatedFinancialReportsRoute
   '/habico-finance': typeof AuthenticatedHabicoFinanceRoute
+  '/help': typeof AuthenticatedHelpRoute
   '/inventory': typeof AuthenticatedInventoryRoute
   '/land-inquiries': typeof AuthenticatedLandInquiriesRoute
   '/landlords': typeof AuthenticatedLandlordsRoute
@@ -770,8 +918,23 @@ export interface FileRoutesByTo {
   '/tenants': typeof AuthenticatedTenantsRoute
   '/timesheets': typeof AuthenticatedTimesheetsRoute
   '/vendor-payments': typeof AuthenticatedVendorPaymentsRoute
+  '/landlord/dashboard': typeof LandlordDashboardRoute
+  '/landlord/documents': typeof LandlordDocumentsRoute
+  '/landlord/financial-reports': typeof LandlordFinancialReportsRoute
+  '/landlord/maintenance': typeof LandlordMaintenanceRoute
+  '/landlord/payments': typeof LandlordPaymentsRoute
+  '/landlord/properties': typeof LandlordPropertiesRouteWithChildren
+  '/landlord/settings': typeof LandlordSettingsRoute
+  '/landlord/tenants': typeof LandlordTenantsRoute
   '/services/$id': typeof ServicesIdRoute
+  '/tenant/dashboard': typeof TenantDashboardRoute
+  '/tenant/documents': typeof TenantDocumentsRoute
+  '/tenant/id-card': typeof TenantIdCardRoute
+  '/tenant/lease': typeof TenantLeaseRoute
+  '/tenant/maintenance': typeof TenantMaintenanceRoute
+  '/tenant/payments': typeof TenantPaymentsRoute
   '/properties/$id': typeof AuthenticatedPropertiesIdRoute
+  '/landlord/properties/$propId': typeof LandlordPropertiesPropIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -784,12 +947,15 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/download': typeof DownloadRoute
   '/land': typeof LandRoute
+  '/landlord': typeof LandlordRouteWithChildren
   '/pricing': typeof PricingRoute
   '/qbo-callback': typeof QboCallbackRoute
   '/register': typeof RegisterRoute
   '/rent': typeof RentRoute
   '/services': typeof ServicesRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/tenant': typeof TenantRouteWithChildren
+  '/_authenticated/account-reset': typeof AuthenticatedAccountResetRoute
   '/_authenticated/allowances': typeof AuthenticatedAllowancesRoute
   '/_authenticated/assets': typeof AuthenticatedAssetsRoute
   '/_authenticated/bid-packages': typeof AuthenticatedBidPackagesRoute
@@ -809,8 +975,10 @@ export interface FileRoutesById {
   '/_authenticated/equipment-rentals': typeof AuthenticatedEquipmentRentalsRoute
   '/_authenticated/estimates': typeof AuthenticatedEstimatesRoute
   '/_authenticated/expenses': typeof AuthenticatedExpensesRoute
+  '/_authenticated/feedback': typeof AuthenticatedFeedbackRoute
   '/_authenticated/financial-reports': typeof AuthenticatedFinancialReportsRoute
   '/_authenticated/habico-finance': typeof AuthenticatedHabicoFinanceRoute
+  '/_authenticated/help': typeof AuthenticatedHelpRoute
   '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
   '/_authenticated/land-inquiries': typeof AuthenticatedLandInquiriesRoute
   '/_authenticated/landlords': typeof AuthenticatedLandlordsRoute
@@ -863,8 +1031,23 @@ export interface FileRoutesById {
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
   '/_authenticated/timesheets': typeof AuthenticatedTimesheetsRoute
   '/_authenticated/vendor-payments': typeof AuthenticatedVendorPaymentsRoute
+  '/landlord/dashboard': typeof LandlordDashboardRoute
+  '/landlord/documents': typeof LandlordDocumentsRoute
+  '/landlord/financial-reports': typeof LandlordFinancialReportsRoute
+  '/landlord/maintenance': typeof LandlordMaintenanceRoute
+  '/landlord/payments': typeof LandlordPaymentsRoute
+  '/landlord/properties': typeof LandlordPropertiesRouteWithChildren
+  '/landlord/settings': typeof LandlordSettingsRoute
+  '/landlord/tenants': typeof LandlordTenantsRoute
   '/services/$id': typeof ServicesIdRoute
+  '/tenant/dashboard': typeof TenantDashboardRoute
+  '/tenant/documents': typeof TenantDocumentsRoute
+  '/tenant/id-card': typeof TenantIdCardRoute
+  '/tenant/lease': typeof TenantLeaseRoute
+  '/tenant/maintenance': typeof TenantMaintenanceRoute
+  '/tenant/payments': typeof TenantPaymentsRoute
   '/_authenticated/properties/$id': typeof AuthenticatedPropertiesIdRoute
+  '/landlord/properties/$propId': typeof LandlordPropertiesPropIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -877,12 +1060,15 @@ export interface FileRouteTypes {
     | '/contact'
     | '/download'
     | '/land'
+    | '/landlord'
     | '/pricing'
     | '/qbo-callback'
     | '/register'
     | '/rent'
     | '/services'
     | '/sitemap.xml'
+    | '/tenant'
+    | '/account-reset'
     | '/allowances'
     | '/assets'
     | '/bid-packages'
@@ -902,8 +1088,10 @@ export interface FileRouteTypes {
     | '/equipment-rentals'
     | '/estimates'
     | '/expenses'
+    | '/feedback'
     | '/financial-reports'
     | '/habico-finance'
+    | '/help'
     | '/inventory'
     | '/land-inquiries'
     | '/landlords'
@@ -956,8 +1144,23 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/timesheets'
     | '/vendor-payments'
+    | '/landlord/dashboard'
+    | '/landlord/documents'
+    | '/landlord/financial-reports'
+    | '/landlord/maintenance'
+    | '/landlord/payments'
+    | '/landlord/properties'
+    | '/landlord/settings'
+    | '/landlord/tenants'
     | '/services/$id'
+    | '/tenant/dashboard'
+    | '/tenant/documents'
+    | '/tenant/id-card'
+    | '/tenant/lease'
+    | '/tenant/maintenance'
+    | '/tenant/payments'
     | '/properties/$id'
+    | '/landlord/properties/$propId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -968,12 +1171,15 @@ export interface FileRouteTypes {
     | '/contact'
     | '/download'
     | '/land'
+    | '/landlord'
     | '/pricing'
     | '/qbo-callback'
     | '/register'
     | '/rent'
     | '/services'
     | '/sitemap.xml'
+    | '/tenant'
+    | '/account-reset'
     | '/allowances'
     | '/assets'
     | '/bid-packages'
@@ -993,8 +1199,10 @@ export interface FileRouteTypes {
     | '/equipment-rentals'
     | '/estimates'
     | '/expenses'
+    | '/feedback'
     | '/financial-reports'
     | '/habico-finance'
+    | '/help'
     | '/inventory'
     | '/land-inquiries'
     | '/landlords'
@@ -1047,8 +1255,23 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/timesheets'
     | '/vendor-payments'
+    | '/landlord/dashboard'
+    | '/landlord/documents'
+    | '/landlord/financial-reports'
+    | '/landlord/maintenance'
+    | '/landlord/payments'
+    | '/landlord/properties'
+    | '/landlord/settings'
+    | '/landlord/tenants'
     | '/services/$id'
+    | '/tenant/dashboard'
+    | '/tenant/documents'
+    | '/tenant/id-card'
+    | '/tenant/lease'
+    | '/tenant/maintenance'
+    | '/tenant/payments'
     | '/properties/$id'
+    | '/landlord/properties/$propId'
   id:
     | '__root__'
     | '/'
@@ -1060,12 +1283,15 @@ export interface FileRouteTypes {
     | '/contact'
     | '/download'
     | '/land'
+    | '/landlord'
     | '/pricing'
     | '/qbo-callback'
     | '/register'
     | '/rent'
     | '/services'
     | '/sitemap.xml'
+    | '/tenant'
+    | '/_authenticated/account-reset'
     | '/_authenticated/allowances'
     | '/_authenticated/assets'
     | '/_authenticated/bid-packages'
@@ -1085,8 +1311,10 @@ export interface FileRouteTypes {
     | '/_authenticated/equipment-rentals'
     | '/_authenticated/estimates'
     | '/_authenticated/expenses'
+    | '/_authenticated/feedback'
     | '/_authenticated/financial-reports'
     | '/_authenticated/habico-finance'
+    | '/_authenticated/help'
     | '/_authenticated/inventory'
     | '/_authenticated/land-inquiries'
     | '/_authenticated/landlords'
@@ -1139,8 +1367,23 @@ export interface FileRouteTypes {
     | '/_authenticated/tenants'
     | '/_authenticated/timesheets'
     | '/_authenticated/vendor-payments'
+    | '/landlord/dashboard'
+    | '/landlord/documents'
+    | '/landlord/financial-reports'
+    | '/landlord/maintenance'
+    | '/landlord/payments'
+    | '/landlord/properties'
+    | '/landlord/settings'
+    | '/landlord/tenants'
     | '/services/$id'
+    | '/tenant/dashboard'
+    | '/tenant/documents'
+    | '/tenant/id-card'
+    | '/tenant/lease'
+    | '/tenant/maintenance'
+    | '/tenant/payments'
     | '/_authenticated/properties/$id'
+    | '/landlord/properties/$propId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1153,16 +1396,25 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   DownloadRoute: typeof DownloadRoute
   LandRoute: typeof LandRoute
+  LandlordRoute: typeof LandlordRouteWithChildren
   PricingRoute: typeof PricingRoute
   QboCallbackRoute: typeof QboCallbackRoute
   RegisterRoute: typeof RegisterRoute
   RentRoute: typeof RentRoute
   ServicesRoute: typeof ServicesRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TenantRoute: typeof TenantRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tenant': {
+      id: '/tenant'
+      path: '/tenant'
+      fullPath: '/tenant'
+      preLoaderRoute: typeof TenantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -1203,6 +1455,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/landlord': {
+      id: '/landlord'
+      path: '/landlord'
+      fullPath: '/landlord'
+      preLoaderRoute: typeof LandlordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/land': {
@@ -1268,12 +1527,110 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tenant/payments': {
+      id: '/tenant/payments'
+      path: '/payments'
+      fullPath: '/tenant/payments'
+      preLoaderRoute: typeof TenantPaymentsRouteImport
+      parentRoute: typeof TenantRoute
+    }
+    '/tenant/maintenance': {
+      id: '/tenant/maintenance'
+      path: '/maintenance'
+      fullPath: '/tenant/maintenance'
+      preLoaderRoute: typeof TenantMaintenanceRouteImport
+      parentRoute: typeof TenantRoute
+    }
+    '/tenant/lease': {
+      id: '/tenant/lease'
+      path: '/lease'
+      fullPath: '/tenant/lease'
+      preLoaderRoute: typeof TenantLeaseRouteImport
+      parentRoute: typeof TenantRoute
+    }
+    '/tenant/id-card': {
+      id: '/tenant/id-card'
+      path: '/id-card'
+      fullPath: '/tenant/id-card'
+      preLoaderRoute: typeof TenantIdCardRouteImport
+      parentRoute: typeof TenantRoute
+    }
+    '/tenant/documents': {
+      id: '/tenant/documents'
+      path: '/documents'
+      fullPath: '/tenant/documents'
+      preLoaderRoute: typeof TenantDocumentsRouteImport
+      parentRoute: typeof TenantRoute
+    }
+    '/tenant/dashboard': {
+      id: '/tenant/dashboard'
+      path: '/dashboard'
+      fullPath: '/tenant/dashboard'
+      preLoaderRoute: typeof TenantDashboardRouteImport
+      parentRoute: typeof TenantRoute
+    }
     '/services/$id': {
       id: '/services/$id'
       path: '/$id'
       fullPath: '/services/$id'
       preLoaderRoute: typeof ServicesIdRouteImport
       parentRoute: typeof ServicesRoute
+    }
+    '/landlord/tenants': {
+      id: '/landlord/tenants'
+      path: '/tenants'
+      fullPath: '/landlord/tenants'
+      preLoaderRoute: typeof LandlordTenantsRouteImport
+      parentRoute: typeof LandlordRoute
+    }
+    '/landlord/settings': {
+      id: '/landlord/settings'
+      path: '/settings'
+      fullPath: '/landlord/settings'
+      preLoaderRoute: typeof LandlordSettingsRouteImport
+      parentRoute: typeof LandlordRoute
+    }
+    '/landlord/properties': {
+      id: '/landlord/properties'
+      path: '/properties'
+      fullPath: '/landlord/properties'
+      preLoaderRoute: typeof LandlordPropertiesRouteImport
+      parentRoute: typeof LandlordRoute
+    }
+    '/landlord/payments': {
+      id: '/landlord/payments'
+      path: '/payments'
+      fullPath: '/landlord/payments'
+      preLoaderRoute: typeof LandlordPaymentsRouteImport
+      parentRoute: typeof LandlordRoute
+    }
+    '/landlord/maintenance': {
+      id: '/landlord/maintenance'
+      path: '/maintenance'
+      fullPath: '/landlord/maintenance'
+      preLoaderRoute: typeof LandlordMaintenanceRouteImport
+      parentRoute: typeof LandlordRoute
+    }
+    '/landlord/financial-reports': {
+      id: '/landlord/financial-reports'
+      path: '/financial-reports'
+      fullPath: '/landlord/financial-reports'
+      preLoaderRoute: typeof LandlordFinancialReportsRouteImport
+      parentRoute: typeof LandlordRoute
+    }
+    '/landlord/documents': {
+      id: '/landlord/documents'
+      path: '/documents'
+      fullPath: '/landlord/documents'
+      preLoaderRoute: typeof LandlordDocumentsRouteImport
+      parentRoute: typeof LandlordRoute
+    }
+    '/landlord/dashboard': {
+      id: '/landlord/dashboard'
+      path: '/dashboard'
+      fullPath: '/landlord/dashboard'
+      preLoaderRoute: typeof LandlordDashboardRouteImport
+      parentRoute: typeof LandlordRoute
     }
     '/_authenticated/vendor-payments': {
       id: '/_authenticated/vendor-payments'
@@ -1639,6 +1996,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInventoryRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/help': {
+      id: '/_authenticated/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof AuthenticatedHelpRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/habico-finance': {
       id: '/_authenticated/habico-finance'
       path: '/habico-finance'
@@ -1651,6 +2015,13 @@ declare module '@tanstack/react-router' {
       path: '/financial-reports'
       fullPath: '/financial-reports'
       preLoaderRoute: typeof AuthenticatedFinancialReportsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/feedback': {
+      id: '/_authenticated/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof AuthenticatedFeedbackRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/expenses': {
@@ -1786,6 +2157,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAllowancesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/account-reset': {
+      id: '/_authenticated/account-reset'
+      path: '/account-reset'
+      fullPath: '/account-reset'
+      preLoaderRoute: typeof AuthenticatedAccountResetRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/landlord/properties/$propId': {
+      id: '/landlord/properties/$propId'
+      path: '/$propId'
+      fullPath: '/landlord/properties/$propId'
+      preLoaderRoute: typeof LandlordPropertiesPropIdRouteImport
+      parentRoute: typeof LandlordPropertiesRoute
+    }
     '/_authenticated/properties/$id': {
       id: '/_authenticated/properties/$id'
       path: '/$id'
@@ -1811,6 +2196,7 @@ const AuthenticatedPropertiesRouteWithChildren =
   )
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAccountResetRoute: typeof AuthenticatedAccountResetRoute
   AuthenticatedAllowancesRoute: typeof AuthenticatedAllowancesRoute
   AuthenticatedAssetsRoute: typeof AuthenticatedAssetsRoute
   AuthenticatedBidPackagesRoute: typeof AuthenticatedBidPackagesRoute
@@ -1830,8 +2216,10 @@ interface AuthenticatedRouteChildren {
   AuthenticatedEquipmentRentalsRoute: typeof AuthenticatedEquipmentRentalsRoute
   AuthenticatedEstimatesRoute: typeof AuthenticatedEstimatesRoute
   AuthenticatedExpensesRoute: typeof AuthenticatedExpensesRoute
+  AuthenticatedFeedbackRoute: typeof AuthenticatedFeedbackRoute
   AuthenticatedFinancialReportsRoute: typeof AuthenticatedFinancialReportsRoute
   AuthenticatedHabicoFinanceRoute: typeof AuthenticatedHabicoFinanceRoute
+  AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
   AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
   AuthenticatedLandInquiriesRoute: typeof AuthenticatedLandInquiriesRoute
   AuthenticatedLandlordsRoute: typeof AuthenticatedLandlordsRoute
@@ -1887,6 +2275,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAccountResetRoute: AuthenticatedAccountResetRoute,
   AuthenticatedAllowancesRoute: AuthenticatedAllowancesRoute,
   AuthenticatedAssetsRoute: AuthenticatedAssetsRoute,
   AuthenticatedBidPackagesRoute: AuthenticatedBidPackagesRoute,
@@ -1907,8 +2296,10 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedEquipmentRentalsRoute: AuthenticatedEquipmentRentalsRoute,
   AuthenticatedEstimatesRoute: AuthenticatedEstimatesRoute,
   AuthenticatedExpensesRoute: AuthenticatedExpensesRoute,
+  AuthenticatedFeedbackRoute: AuthenticatedFeedbackRoute,
   AuthenticatedFinancialReportsRoute: AuthenticatedFinancialReportsRoute,
   AuthenticatedHabicoFinanceRoute: AuthenticatedHabicoFinanceRoute,
+  AuthenticatedHelpRoute: AuthenticatedHelpRoute,
   AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
   AuthenticatedLandInquiriesRoute: AuthenticatedLandInquiriesRoute,
   AuthenticatedLandlordsRoute: AuthenticatedLandlordsRoute,
@@ -1969,6 +2360,43 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface LandlordPropertiesRouteChildren {
+  LandlordPropertiesPropIdRoute: typeof LandlordPropertiesPropIdRoute
+}
+
+const LandlordPropertiesRouteChildren: LandlordPropertiesRouteChildren = {
+  LandlordPropertiesPropIdRoute: LandlordPropertiesPropIdRoute,
+}
+
+const LandlordPropertiesRouteWithChildren =
+  LandlordPropertiesRoute._addFileChildren(LandlordPropertiesRouteChildren)
+
+interface LandlordRouteChildren {
+  LandlordDashboardRoute: typeof LandlordDashboardRoute
+  LandlordDocumentsRoute: typeof LandlordDocumentsRoute
+  LandlordFinancialReportsRoute: typeof LandlordFinancialReportsRoute
+  LandlordMaintenanceRoute: typeof LandlordMaintenanceRoute
+  LandlordPaymentsRoute: typeof LandlordPaymentsRoute
+  LandlordPropertiesRoute: typeof LandlordPropertiesRouteWithChildren
+  LandlordSettingsRoute: typeof LandlordSettingsRoute
+  LandlordTenantsRoute: typeof LandlordTenantsRoute
+}
+
+const LandlordRouteChildren: LandlordRouteChildren = {
+  LandlordDashboardRoute: LandlordDashboardRoute,
+  LandlordDocumentsRoute: LandlordDocumentsRoute,
+  LandlordFinancialReportsRoute: LandlordFinancialReportsRoute,
+  LandlordMaintenanceRoute: LandlordMaintenanceRoute,
+  LandlordPaymentsRoute: LandlordPaymentsRoute,
+  LandlordPropertiesRoute: LandlordPropertiesRouteWithChildren,
+  LandlordSettingsRoute: LandlordSettingsRoute,
+  LandlordTenantsRoute: LandlordTenantsRoute,
+}
+
+const LandlordRouteWithChildren = LandlordRoute._addFileChildren(
+  LandlordRouteChildren,
+)
+
 interface ServicesRouteChildren {
   ServicesIdRoute: typeof ServicesIdRoute
 }
@@ -1981,6 +2409,27 @@ const ServicesRouteWithChildren = ServicesRoute._addFileChildren(
   ServicesRouteChildren,
 )
 
+interface TenantRouteChildren {
+  TenantDashboardRoute: typeof TenantDashboardRoute
+  TenantDocumentsRoute: typeof TenantDocumentsRoute
+  TenantIdCardRoute: typeof TenantIdCardRoute
+  TenantLeaseRoute: typeof TenantLeaseRoute
+  TenantMaintenanceRoute: typeof TenantMaintenanceRoute
+  TenantPaymentsRoute: typeof TenantPaymentsRoute
+}
+
+const TenantRouteChildren: TenantRouteChildren = {
+  TenantDashboardRoute: TenantDashboardRoute,
+  TenantDocumentsRoute: TenantDocumentsRoute,
+  TenantIdCardRoute: TenantIdCardRoute,
+  TenantLeaseRoute: TenantLeaseRoute,
+  TenantMaintenanceRoute: TenantMaintenanceRoute,
+  TenantPaymentsRoute: TenantPaymentsRoute,
+}
+
+const TenantRouteWithChildren =
+  TenantRoute._addFileChildren(TenantRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
@@ -1991,13 +2440,25 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   DownloadRoute: DownloadRoute,
   LandRoute: LandRoute,
+  LandlordRoute: LandlordRouteWithChildren,
   PricingRoute: PricingRoute,
   QboCallbackRoute: QboCallbackRoute,
   RegisterRoute: RegisterRoute,
   RentRoute: RentRoute,
   ServicesRoute: ServicesRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TenantRoute: TenantRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

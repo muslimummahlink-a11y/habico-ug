@@ -71,16 +71,24 @@ function TenantMaintenance() {
       if (!title.trim()) throw new Error("Title is required");
       if (!description.trim()) throw new Error("Description is required");
 
-      const { error } = await supabase.from("maintenance_requests").insert({
+      const { data: request, error } = await supabase.from("maintenance_requests").insert({
         unit_id: leaseData.unit_id,
         tenant_id: tenant.id,
         title,
         description,
         priority,
-        status: "pending",
-        images: fileUrl ? [fileUrl] : [],
-      });
+        status: "open",
+      }).select("id").single();
       if (error) throw error;
+
+      if (fileUrl && request?.id) {
+        const { error: imageError } = await supabase.from("maintenance_images").insert({
+          maintenance_request_id: request.id,
+          image_url: fileUrl,
+          image_type: "before",
+        });
+        if (imageError) throw imageError;
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tenant-maintenance"] });

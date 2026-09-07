@@ -119,7 +119,7 @@ function ServiceDetailPage() {
           <p className="mt-3 text-muted-foreground">Talk to Habico today about managing your property the right way.</p>
           <div className="mt-6 flex justify-center gap-3">
             <Button asChild><Link to="/contact">Contact us</Link></Button>
-            <Button asChild variant="outline"><Link to="/auth" search={{ mode: "signup" }}>Open your portal</Link></Button>
+            <Button asChild variant="outline"><Link to="/auth">Open your portal</Link></Button>
           </div>
         </div>
       </section>

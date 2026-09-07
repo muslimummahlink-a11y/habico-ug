@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Card, CardContent } from "@/components/ui/card";
 import { SiteHeader } from "@/components/site-header";
 import { VisitAdPopup } from "@/components/visit-ad-popup";
+import { PropertyReviews } from "@/components/property-reviews";
 import { toast } from "sonner";
 import {
   MapPin, Search, SlidersHorizontal, ArrowRight, Loader2,
@@ -278,6 +279,7 @@ function LandPage() {
               {selectedLand.image_url && (
                 <img src={selectedLand.image_url} alt={selectedLand.name} className="h-48 w-full rounded-lg object-cover" />
               )}
+              <PropertyReviews propertyId={selectedLand.id} />
 
               <div className="space-y-4">
                 {selectedLand.description && (

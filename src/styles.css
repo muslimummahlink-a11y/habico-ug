@@ -148,6 +148,17 @@
 @utility shadow-soft { box-shadow: var(--shadow-soft); }
 @utility shadow-card { box-shadow: var(--shadow-card); }
 
+@layer utilities {
+  .rounded-sm,
+  .rounded-md,
+  .rounded-lg,
+  .rounded-xl,
+  .rounded-2xl,
+  .rounded-3xl {
+    border-radius: 0.375rem !important;
+  }
+}
+
 /* ── Safe area insets for mobile native ── */
 @layer base {
   body {

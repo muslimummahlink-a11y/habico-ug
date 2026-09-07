@@ -13,8 +13,9 @@ import { toast } from "sonner";
 import { Html5Qrcode } from "html5-qrcode";
 import { validateLicenseKey } from "@/lib/validateLicenseKey.functions";
 import { activateLicenseKey } from "@/lib/activateLicenseKey.functions";
+import heroImg from "@/assets/hero-residence.jpg";
 
-const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).optional(), redirect: z.string().optional(), c: z.string().optional() });
+const searchSchema = z.object({ mode: z.enum(["signin"]).optional(), redirect: z.string().optional(), c: z.string().optional() });
 
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
@@ -33,10 +34,8 @@ function AuthPage() {
   const search = Route.useSearch();
   const nav = useNavigate();
   const { user, loading } = useAuth();
-  const [mode, setMode] = useState<"signin" | "signup">(search.mode ?? "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
 
   const [rememberMe, setRememberMe] = useState(() => localStorage.getItem('__habico_remember_me') !== 'false');
@@ -54,17 +53,6 @@ function AuthPage() {
   const [tenantUnitNumber, setTenantUnitNumber] = useState("");
   const [tenantPin, setTenantPin] = useState("");
 
-  // License key activation
-  const [licenseKey, setLicenseKey] = useState("");
-  const [licensing, setLicensing] = useState(false);
-  const [licenseResult, setLicenseResult] = useState<{ valid: boolean; companyName?: string; companyId?: string; hasAdmin?: boolean; message?: string } | null>(null);
-  const [activateName, setActivateName] = useState("");
-  const [activateEmail, setActivateEmail] = useState("");
-  const [activatePassword, setActivatePassword] = useState("");
-  const [activatePhone, setActivatePhone] = useState("");
-  const [activating, setActivating] = useState(false);
-  const [activated, setActivated] = useState(false);
-
   useEffect(() => {
     if (!loading && user) nav({ to: search.redirect ?? "/dashboard" });
   }, [loading, user, nav, search.redirect]);
@@ -73,23 +61,14 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email, password,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard`, data: { full_name: name } },
-        });
-        if (error) throw error;
-        toast.success("Account created. Welcome to Habico.");
+      localStorage.setItem('__habico_remember_me', String(rememberMe));
+      if (rememberMe) {
+        localStorage.setItem('__habico_remembered_email', email);
       } else {
-        localStorage.setItem('__habico_remember_me', String(rememberMe));
-        if (rememberMe) {
-          localStorage.setItem('__habico_remembered_email', email);
-        } else {
-          localStorage.removeItem('__habico_remembered_email');
-        }
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        localStorage.removeItem('__habico_remembered_email');
       }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
@@ -99,7 +78,10 @@ function AuthPage() {
 
   return (
     <div className="grid min-h-screen md:grid-cols-2">
-      <div className="hidden bg-gradient-hero p-12 text-primary-foreground md:flex md:flex-col md:justify-between">
+      <div className="relative flex overflow-hidden bg-gradient-hero p-6 text-primary-foreground md:flex md:flex-col md:justify-between md:p-12">
+        <img src={heroImg} alt="Habico-managed residence" className="absolute inset-0 h-full w-full object-cover opacity-30" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/95 via-primary/80 to-primary/60" />
+        <div className="relative z-10 flex h-full flex-col justify-between">
         <Link to="/" className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-md bg-accent text-accent-foreground"><Building2 className="h-5 w-5"/></div>
           <div className="display text-xl font-bold">HABICO</div>
@@ -125,157 +107,28 @@ function AuthPage() {
           </div>
         </div>
         <div className="text-xs uppercase tracking-widest text-primary-foreground/60">Habico Property Managers · Kampala</div>
+        </div>
       </div>
       <div className="flex items-center justify-center bg-background px-4 py-10 md:p-10">
         <div className="w-full max-w-sm space-y-8">
           <form onSubmit={onSubmit}>
-            <h2 className="display text-3xl font-bold">{mode === "signup" ? "Create account" : "Welcome back"}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{mode === "signup" ? "Sign up to access your Habico portal." : "Sign in to your Habico portal."}</p>
+            <h2 className="display text-3xl font-bold">Welcome back</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Sign in to your Habico portal.</p>
             <div className="mt-8 space-y-5">
-              {mode === "signup" && (
-                <div><Label htmlFor="name">Full name</Label><Input id="name" value={name} onChange={(e)=>setName(e.target.value)} required maxLength={100} className="mt-1.5"/></div>
-              )}
               <div><Label htmlFor="email">Email</Label><Input id="email" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} required maxLength={255} className="mt-1.5"/></div>
               <div><Label htmlFor="password">Password</Label><Input id="password" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} required minLength={8} className="mt-1.5"/></div>
-              {mode === "signin" && (
-                <div className="flex items-center gap-3">
-                  <Checkbox id="remember" checked={rememberMe} onCheckedChange={(c) => setRememberMe(c === true)} />
-                  <Label htmlFor="remember" className="text-sm font-normal cursor-pointer select-none">Remember me</Label>
-                </div>
-              )}
-              <Button type="submit" disabled={busy} className="w-full">{busy ? "…" : mode === "signup" ? "Create account" : "Sign in"}</Button>
-              <p className="text-center text-sm text-muted-foreground">
-                {mode === "signup" ? "Already have an account?" : "New to Habico?"}{" "}
-                <button type="button" className="font-medium text-primary underline-offset-4 hover:underline" onClick={()=>setMode(mode==="signup"?"signin":"signup")}>
-                  {mode === "signup" ? "Sign in" : "Create one"}
-                </button>
-              </p>
+              <div className="flex items-center gap-3">
+                <Checkbox id="remember" checked={rememberMe} onCheckedChange={(c) => setRememberMe(c === true)} />
+                <Label htmlFor="remember" className="text-sm font-normal cursor-pointer select-none">Remember me</Label>
+              </div>
+              <Button type="submit" disabled={busy} className="w-full">{busy ? "…" : "Sign in"}</Button>
             </div>
           </form>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
-            <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">Activate company license</span></div>
+          <div className="rounded-lg border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+            Need first-time access for a company account? Ask the Habico team to set up your workspace or contact support to activate your company profile.
+            <Link to="/contact" className="mt-2 inline-flex font-medium text-primary hover:text-accent">Contact support</Link>
           </div>
-
-          {activated ? (
-            <div className="flex flex-col items-center gap-3 rounded-lg border p-6 text-center">
-              <CheckCircle className="h-8 w-8 text-green-500" />
-              <div>
-                <p className="font-medium">Account created!</p>
-                <p className="text-sm text-muted-foreground">You can now sign in with your email.</p>
-              </div>
-              <Button size="sm" onClick={() => { setMode("signin"); setLicenseKey(""); setLicenseResult(null); setActivated(false); }}>
-                Go to Sign In
-              </Button>
-            </div>
-          ) : licenseResult?.valid && !licenseResult.hasAdmin ? (
-            <div className="rounded-lg border p-4 space-y-4">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">{licenseResult.companyName}</p>
-                  <p className="text-xs text-muted-foreground">Create your admin account to activate</p>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div><Label>Full name *</Label><Input value={activateName} onChange={(e) => setActivateName(e.target.value)} className="mt-1.5" /></div>
-                <div><Label>Email *</Label><Input type="email" value={activateEmail} onChange={(e) => setActivateEmail(e.target.value)} className="mt-1.5" /></div>
-                <div><Label>Phone</Label><Input value={activatePhone} onChange={(e) => setActivatePhone(e.target.value)} className="mt-1.5" /></div>
-                <div><Label>Password *</Label><Input type="password" value={activatePassword} onChange={(e) => setActivatePassword(e.target.value)} minLength={8} className="mt-1.5" /></div>
-                <Button
-                  className="w-full"
-                  disabled={activating}
-                  onClick={async () => {
-                    if (!activateName || !activateEmail || !activatePassword) { toast.error("Fill in all required fields"); return; }
-                    if (activatePassword.length < 8) { toast.error("Password must be at least 8 characters"); return; }
-                    setActivating(true);
-                    try {
-                      const result = await activateLicenseKey({ data: { licenseKey, adminName: activateName, adminEmail: activateEmail, adminPassword: activatePassword, adminPhone: activatePhone } });
-                      if (!result.success) { toast.error(result.message); return; }
-                      setActivated(true);
-                      toast.success("Admin account created! You can now sign in.");
-                    } catch (e) {
-                      toast.error((e as Error).message);
-                    } finally {
-                      setActivating(false);
-                    }
-                  }}
-                >
-                  {activating ? "Creating account..." : "Create Admin Account"}
-                </Button>
-                <button
-                  type="button"
-                  className="w-full text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
-                  onClick={() => { setLicenseKey(""); setLicenseResult(null); }}
-                >
-                  Use a different license key
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="license-key">License Key</Label>
-                <div className="mt-1.5 flex gap-2">
-                  <Input
-                    id="license-key"
-                    placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
-                    value={licenseKey}
-                    onChange={(e) => setLicenseKey(e.target.value)}
-                    className="font-mono"
-                  />
-                </div>
-              </div>
-              {licenseResult?.valid === false && (
-                <p className="text-sm text-destructive">{licenseResult.message}</p>
-              )}
-              {licenseResult?.valid && licenseResult.hasAdmin && (
-                <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm">
-                  <p className="font-medium text-green-800">{licenseResult.companyName}</p>
-                  <p className="mt-1 text-green-700">This license is already activated. Sign in with your email.</p>
-                  <Button size="sm" variant="outline" className="mt-2" onClick={() => setMode("signin")}>
-                    Go to Sign In
-                  </Button>
-                </div>
-              )}
-              <Button
-                className="w-full"
-                variant="outline"
-                disabled={licensing || !licenseKey.trim()}
-                onClick={async () => {
-                  setLicensing(true);
-                  setLicenseResult(null);
-                  try {
-                    const result = await validateLicenseKey({ data: { licenseKey: licenseKey.trim() } });
-                    if (!result.valid) {
-                      setLicenseResult({ valid: false, message: result.message });
-                      return;
-                    }
-                    setLicenseResult({
-                      valid: true,
-                      companyName: result.companyName,
-                      companyId: result.companyId,
-                      hasAdmin: result.hasAdmin,
-                    });
-                    if (!result.hasAdmin) {
-                      setActivateName("");
-                      setActivateEmail("");
-                      setActivatePassword("");
-                      setActivatePhone("");
-                    }
-                  } catch (e) {
-                    toast.error((e as Error).message);
-                  } finally {
-                    setLicensing(false);
-                  }
-                }}
-              >
-                <UserCog className="mr-2 h-4 w-4" />
-                {licensing ? "Validating..." : "Validate License Key"}
-              </Button>
-            </div>
-          )}
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>

@@ -27,15 +27,12 @@ export function SiteHeader() {
   if (isNative) return null;
   const { user } = useAuth();
   const nav = [
-    { label: "Home", to: "/" as const },
     { label: "Properties", to: "/rent" as const },
     { label: "Land", to: "/land" as const },
     { label: "Services", to: "/services" as const },
     { label: "Pricing", to: "/pricing" as const },
-    { label: "Download", to: "/download" as const },
-    { label: "Move Service", to: "/book-move" as const },
     { label: "About", to: "/about" as const },
-    { label: "Contact", to: "/contact" as const },
+    { label: "Help", to: "/help" as const },
   ];
 
   useEffect(() => {
@@ -65,7 +62,7 @@ export function SiteHeader() {
                 <li key="services" ref={servicesRef} className="relative list-none">
                   <button
                     onClick={() => setServicesOpen((o) => !o)}
-                    className="flex items-center gap-1 rounded-md px-2 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground xl:px-3"
+                    className="flex items-center gap-1 px-2 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground xl:px-3"
                   >
                     Services
                     <ChevronDown className={`h-3.5 w-3.5 transition-transform ${servicesOpen ? "rotate-180" : ""}`} />
@@ -104,10 +101,16 @@ export function SiteHeader() {
             );
           })}
         </nav>
+        <div className="flex items-center gap-2">
+          {!user && (
+            <Button asChild className="hidden sm:inline-flex">
+              <Link to="/auth">Sign in</Link>
+            </Button>
+          )}
         <div className="relative" ref={moreRef}>
           <button
             onClick={() => setMoreOpen((o) => !o)}
-            className="hidden rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:flex"
+            className="hidden p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:flex"
             aria-label="More options"
           >
             <MoreHorizontal className="h-5 w-5" />
@@ -125,25 +128,14 @@ export function SiteHeader() {
                     Dashboard
                   </Link>
                 ) : (
-                  <>
-                    <Link
-                      to="/auth"
-                      onClick={() => setMoreOpen(false)}
-                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
-                    >
-                      <LogIn className="h-4 w-4 text-muted-foreground" />
-                      Sign in
-                    </Link>
-                    <Link
-                      to="/auth"
-                      search={{ mode: "signup" }}
-                      onClick={() => setMoreOpen(false)}
-                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
-                    >
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      Create account
-                    </Link>
-                  </>
+                  <Link
+                    to="/auth"
+                    onClick={() => setMoreOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
+                  >
+                    <LogIn className="h-4 w-4 text-muted-foreground" />
+                    Sign in
+                  </Link>
                 )}
                 <div className="my-1 border-t border-border" />
                 <Link
@@ -171,6 +163,7 @@ export function SiteHeader() {
         </div>
         <button className="lg:hidden" onClick={() => setOpen((o) => !o)} aria-label="Menu"><Menu /></button>
       </div>
+      </div>
       {open && (
         <div className="border-t border-border bg-background lg:hidden">
           <div className="max-h-[70vh] flex-col gap-1 overflow-y-auto p-4">
@@ -196,10 +189,7 @@ export function SiteHeader() {
             {user ? (
               <Button asChild className="mt-2 w-full"><Link to="/dashboard">Dashboard</Link></Button>
             ) : (
-              <>
-                <Button asChild variant="outline" className="mt-2 w-full"><Link to="/auth">Sign in</Link></Button>
-                <Button asChild className="mt-1 w-full"><Link to="/auth" search={{ mode: "signup" }}>Get started</Link></Button>
-              </>
+              <Button asChild className="mt-2 w-full"><Link to="/auth">Sign in</Link></Button>
             )}
             <div className="mt-4 border-t border-border pt-4">
               <AppStoreBadges compact />
