@@ -94,7 +94,21 @@ function PaymentsPage() {
         ? await supabase.from("tenants").select("id, full_name, email").in("id", ids)
         : { data: [] };
       const map = new Map((tenantList ?? []).map((t: any) => [t.id, t]));
-      return (data ?? []).map((p: any) => ({ ...p, tenant: map.get(p.leases?.tenant_id) }));
+      return (data ?? []).map((p: any) => {
+        const tenant = map.get(p.leases?.tenant_id);
+        const propertyName = p.leases?.units?.properties?.name || "Property not assigned";
+        const unitNumber = p.leases?.units?.unit_number || "Unit not assigned";
+        const tenantName = tenant?.full_name || tenant?.email || "Tenant not assigned";
+        return {
+          ...p,
+          tenant,
+          tenantName,
+          propertyName,
+          unitNumber,
+          paymentTitle: tenantName,
+          paymentSubtitle: `${propertyName} · ${unitNumber}`,
+        };
+      });
     },
   });
 
@@ -574,10 +588,10 @@ function PaymentsPage() {
       <EntityCardGrid
         data={payments}
         isLoading={false}
-        searchFields={["tenant", "property", "unit", "reference"]}
+        searchFields={["tenantName", "propertyName", "unitNumber", "reference"]}
         keyExtractor={(item) => item.id}
-        titleField="tenant"
-        subtitleField="property"
+        titleField="paymentTitle"
+        subtitleField="paymentSubtitle"
         metricFields={[
           { key: "amount", label: "Amount", format: "currency" },
           { key: "payment_date", label: "Date", format: "date" },
@@ -589,8 +603,9 @@ function PaymentsPage() {
             <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openEdit(p)}>
               <Pencil className="h-3 w-3" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openReceipt(p)}>
+            <Button variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={() => openReceipt(p)} title="View payment receipt">
               <Receipt className="h-3 w-3" />
+              <span className="hidden sm:inline">Receipt</span>
             </Button>
             <AlertDialog open={voidId === p.id} onOpenChange={(o) => !o && setVoidId(null)}>
               <AlertDialogTrigger asChild>
