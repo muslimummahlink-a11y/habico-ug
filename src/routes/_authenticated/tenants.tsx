@@ -321,6 +321,40 @@ function TenantsPage() {
     onError: (e) => toast.error((e as Error).message),
   });
 
+  const markLeftMutation = useMutation({
+    mutationFn: async (tenant: any) => {
+      const lease = tenant.lease;
+      if (lease?.id) {
+        const { error: leaseError } = await supabase
+          .from("leases")
+          .update({ status: "ended", ended_at: new Date().toISOString(), end_reason: "Tenant left" })
+          .eq("id", lease.id);
+        if (leaseError) throw leaseError;
+      }
+
+      if (lease?.unit_id) {
+        const { error: unitError } = await supabase
+          .from("units")
+          .update({ status: "vacant" })
+          .eq("id", lease.unit_id);
+        if (unitError) throw unitError;
+      }
+
+      const { error: tenantError } = await supabase
+        .from("tenants")
+        .update({ status: "inactive" })
+        .eq("id", tenant.id);
+      if (tenantError) throw tenantError;
+    },
+    onSuccess: (_data, tenant) => {
+      qc.invalidateQueries({ queryKey: ["tenants"] });
+      qc.invalidateQueries({ queryKey: ["properties"] });
+      qc.invalidateQueries({ queryKey: ["leases"] });
+      toast.success(`${tenant.full_name || "Tenant"} archived and unit made available`);
+    },
+    onError: (e) => toast.error((e as Error).message || "Could not archive tenant"),
+  });
+
   async function printDossier(t: any) {
     const { data: payments } = t.lease?.id
       ? await supabase.from("payments").select("*").eq("lease_id", t.lease.id).order("payment_date", { ascending: false })
@@ -972,13 +1006,29 @@ function TenantsPage() {
                 <RefreshCw className="h-4 w-4 mr-1" /> Reactivate
               </Button>
             ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => statusMutation.mutate({ id: t.id, status: "blacklisted" })}
-              >
-                <ShieldAlert className="h-4 w-4 mr-1" /> Blacklist
-              </Button>
+              <div className="flex flex-wrap items-center gap-1">
+                {t.lease && t.status === "active" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (window.confirm(`Mark ${t.full_name || "this tenant"} as left? Their lease will be archived and the unit will become available.`)) {
+                        markLeftMutation.mutate(t);
+                      }
+                    }}
+                    disabled={markLeftMutation.isPending}
+                  >
+                    <Home className="h-4 w-4 mr-1" /> Mark Left &amp; Free Unit
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => statusMutation.mutate({ id: t.id, status: "blacklisted" })}
+                >
+                  <ShieldAlert className="h-4 w-4 mr-1" /> Blacklist
+                </Button>
+              </div>
             )}
           </div>
         )}

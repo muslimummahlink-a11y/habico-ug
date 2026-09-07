@@ -1,0 +1,3 @@
+ALTER TABLE public.leases
+  ADD COLUMN IF NOT EXISTS ended_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS end_reason TEXT;

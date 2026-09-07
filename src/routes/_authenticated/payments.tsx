@@ -13,7 +13,7 @@ import { SearchableSelect, type SearchableOption } from "@/components/ui/searcha
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { EntityCardGrid } from "@/components/entity-card-grid";
-import { Plus, Pencil, Trash2, Receipt, Printer, AlertTriangle, CreditCard, Mail, MessageSquare } from "lucide-react";
+import { Plus, Pencil, Trash2, Receipt, Printer, AlertTriangle, CreditCard, Mail, MessageSquare, SlidersHorizontal, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { createNotification } from "@/lib/create-notification";
 import { StripePaymentForm } from "@/components/ui/stripe-payment-form";
@@ -59,6 +59,17 @@ function PaymentsPage() {
   const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
   const [stripePaymentIntentId, setStripePaymentIntentId] = useState<string | null>(null);
   const [stripeProcessing, setStripeProcessing] = useState(false);
+  const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
+  const [paymentFilters, setPaymentFilters] = useState({
+    property: "",
+    tenant: "",
+    method: "",
+    paymentType: "",
+    fromDate: "",
+    toDate: "",
+    minAmount: "",
+    maxAmount: "",
+  });
 
   const [form, setForm] = useState({
     lease_id: "",
@@ -273,6 +284,38 @@ function PaymentsPage() {
   const rentCount = thisMonthPayments.filter(
     (p: any) => p.payment_type === "rent" || !p.payment_type,
   ).length;
+
+  const propertyOptions = Array.from(new Map(
+    payments
+      .map((p: any) => [p.propertyName, p.propertyName])
+      .filter(([name]) => Boolean(name)),
+  ).values());
+  const tenantOptions = Array.from(new Map(
+    payments
+      .map((p: any) => [p.tenantName, p.tenantName])
+      .filter(([name]) => Boolean(name)),
+  ).values());
+
+  const filteredPayments = payments.filter((payment: any) => {
+    const amount = Number(payment.amount || 0);
+    const paymentDate = payment.payment_date || "";
+    return (
+      (!paymentFilters.property || payment.propertyName === paymentFilters.property) &&
+      (!paymentFilters.tenant || payment.tenantName === paymentFilters.tenant) &&
+      (!paymentFilters.method || payment.method === paymentFilters.method) &&
+      (!paymentFilters.paymentType || (payment.payment_type || "rent") === paymentFilters.paymentType) &&
+      (!paymentFilters.fromDate || paymentDate >= paymentFilters.fromDate) &&
+      (!paymentFilters.toDate || paymentDate <= paymentFilters.toDate) &&
+      (!paymentFilters.minAmount || amount >= Number(paymentFilters.minAmount)) &&
+      (!paymentFilters.maxAmount || amount <= Number(paymentFilters.maxAmount))
+    );
+  });
+
+  const activePaymentFilterCount = Object.values(paymentFilters).filter(Boolean).length;
+
+  function clearPaymentFilters() {
+    setPaymentFilters({ property: "", tenant: "", method: "", paymentType: "", fromDate: "", toDate: "", minAmount: "", maxAmount: "" });
+  }
 
   function openEdit(p: any) {
     setEditId(p.id);
@@ -585,8 +628,43 @@ function PaymentsPage() {
         </Card>
       </div>
 
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="flex items-center gap-2 text-sm font-semibold"><SlidersHorizontal className="h-4 w-4 text-accent" /> Advanced filters</p>
+              <p className="text-xs text-muted-foreground">Narrow payments by property, tenant, date, method, type, or amount.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {activePaymentFilterCount > 0 && <span className="text-xs text-accent">{activePaymentFilterCount} active</span>}
+              <Button variant="outline" size="sm" onClick={() => setAdvancedFiltersOpen((open) => !open)}>
+                {advancedFiltersOpen ? "Hide filters" : "Show filters"}
+              </Button>
+              {activePaymentFilterCount > 0 && (
+                <Button variant="ghost" size="sm" onClick={clearPaymentFilters} title="Clear filters">
+                  <RotateCcw className="mr-1 h-3.5 w-3.5" /> Clear
+                </Button>
+              )}
+            </div>
+          </div>
+          {advancedFiltersOpen && (
+            <div className="mt-4 grid gap-3 border-t pt-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="space-y-1"><Label className="text-xs">Property</Label><select className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={paymentFilters.property} onChange={(e) => setPaymentFilters({ ...paymentFilters, property: e.target.value })}><option value="">All properties</option>{propertyOptions.map((option) => <option key={option} value={option}>{option}</option>)}</select></div>
+              <div className="space-y-1"><Label className="text-xs">Tenant</Label><select className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={paymentFilters.tenant} onChange={(e) => setPaymentFilters({ ...paymentFilters, tenant: e.target.value })}><option value="">All tenants</option>{tenantOptions.map((option) => <option key={option} value={option}>{option}</option>)}</select></div>
+              <div className="space-y-1"><Label className="text-xs">Method</Label><select className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={paymentFilters.method} onChange={(e) => setPaymentFilters({ ...paymentFilters, method: e.target.value })}><option value="">All methods</option>{METHOD_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></div>
+              <div className="space-y-1"><Label className="text-xs">Payment type</Label><select className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={paymentFilters.paymentType} onChange={(e) => setPaymentFilters({ ...paymentFilters, paymentType: e.target.value })}><option value="">All types</option>{PAYMENT_TYPE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></div>
+              <div className="space-y-1"><Label className="text-xs">From date</Label><Input type="date" value={paymentFilters.fromDate} onChange={(e) => setPaymentFilters({ ...paymentFilters, fromDate: e.target.value })} /></div>
+              <div className="space-y-1"><Label className="text-xs">To date</Label><Input type="date" value={paymentFilters.toDate} onChange={(e) => setPaymentFilters({ ...paymentFilters, toDate: e.target.value })} /></div>
+              <div className="space-y-1"><Label className="text-xs">Minimum amount (UGX)</Label><Input type="number" min="0" value={paymentFilters.minAmount} onChange={(e) => setPaymentFilters({ ...paymentFilters, minAmount: e.target.value })} placeholder="0" /></div>
+              <div className="space-y-1"><Label className="text-xs">Maximum amount (UGX)</Label><Input type="number" min="0" value={paymentFilters.maxAmount} onChange={(e) => setPaymentFilters({ ...paymentFilters, maxAmount: e.target.value })} placeholder="No limit" /></div>
+            </div>
+          )}
+          <p className="mt-3 text-xs text-muted-foreground">Showing {filteredPayments.length} of {payments.length} payments</p>
+        </CardContent>
+      </Card>
+
       <EntityCardGrid
-        data={payments}
+        data={filteredPayments}
         isLoading={false}
         searchFields={["tenantName", "propertyName", "unitNumber", "reference"]}
         keyExtractor={(item) => item.id}
