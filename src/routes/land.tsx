@@ -8,10 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SiteHeader } from "@/components/site-header";
 import { VisitAdPopup } from "@/components/visit-ad-popup";
 import { PropertyReviews } from "@/components/property-reviews";
 import { toast } from "sonner";
+import landBanner from "@/assets/land-banner.jpg";
 import {
   MapPin, Search, SlidersHorizontal, ArrowRight, Loader2,
   Phone, Mail, MessageSquare, Ruler, Lock, Send, BadgePlus,
@@ -143,41 +145,74 @@ function LandPage() {
       <SiteHeader />
 
       {/* HERO */}
-      <section className="relative overflow-hidden bg-gradient-hero py-16 text-primary-foreground md:py-24">
-        <div className="absolute inset-0 opacity-10">
-          <div className="h-full w-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-accent/30 via-transparent to-transparent" />
-        </div>
-        <div className="relative mx-auto max-w-7xl px-4 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-accent">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Land for Sale
-          </div>
-          <h1 className="mt-6 display text-4xl font-bold leading-tight md:text-6xl">
-            Find Your <span className="text-accent">Plot</span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-primary-foreground/80">
-            Browse available land listed with Habico. Submit an inquiry and our team will connect you with the owner.
-          </p>
-          <div className="mx-auto mt-8 flex max-w-2xl gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                className="border-primary-foreground/20 bg-primary-foreground/10 pl-9 text-primary-foreground placeholder:text-primary-foreground/50"
-                placeholder="Search by name, location or city..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+      <section className="relative isolate overflow-hidden bg-primary text-primary-foreground">
+        <img src={landBanner} alt="Green agricultural land in East Africa" className="absolute inset-0 -z-20 h-full w-full object-cover" />
+        <div className="absolute inset-0 -z-10 bg-primary/25" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/50 via-primary/25 to-primary/5" />
+        <div className="mx-auto grid max-w-7xl items-end gap-10 px-4 py-14 md:grid-cols-[1fr_0.8fr] md:py-24">
+          <div>
+            <div className="inline-flex items-center gap-2 border border-accent/50 bg-primary/30 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-accent">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Land for Sale
             </div>
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4 text-primary-foreground/60" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="rounded-lg border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-2 text-xs text-primary-foreground outline-none"
-              >
-                <option value="newest" className="bg-background text-foreground">Newest</option>
-                <option value="price_low" className="bg-background text-foreground">Price: Low</option>
-                <option value="price_high" className="bg-background text-foreground">Price: High</option>
-              </select>
+            <h1 className="mt-6 max-w-3xl display text-4xl font-bold leading-[0.98] md:text-6xl">
+              Find building and agricultural land in <span className="text-accent">Uganda.</span>
+            </h1>
+            <p className="mt-5 max-w-xl text-base leading-7 text-primary-foreground/85 md:text-lg">
+              Explore land opportunities across Uganda with Habico. Search by location, compare plots, and make your next move with local guidance.
+            </p>
+          </div>
+          <div className="border border-primary-foreground/20 bg-primary/75 p-4 backdrop-blur-sm md:p-5">
+            <div className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-accent">Find your opportunity</div>
+            <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
+              <div className="relative min-w-0 flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary-foreground/60" />
+                <Input
+                  className="border-primary-foreground/20 bg-primary-foreground/10 pl-9 text-primary-foreground placeholder:text-primary-foreground/55"
+                  placeholder="Search location or plot..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <div className="flex min-w-0 items-center gap-2 border border-primary-foreground/20 bg-primary-foreground/10 px-3 transition-colors focus-within:border-accent/70 focus-within:bg-primary-foreground/15">
+                <SlidersHorizontal className="h-4 w-4 shrink-0 text-primary-foreground/60" />
+                <span className="sr-only">Sort land listings</span>
+                <Select value={sortBy} onValueChange={(value) => setSortBy(value as typeof sortBy)}>
+                  <SelectTrigger className="h-10 min-h-10 flex-1 rounded-none border-0 bg-transparent px-0 py-2 text-xs font-medium text-primary-foreground shadow-none focus:ring-0 [&>svg]:text-primary-foreground/70">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Newest listings</SelectItem>
+                    <SelectItem value="price_low">Price: Low to high</SelectItem>
+                    <SelectItem value="price_high">Price: High to low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-border bg-secondary/35">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-[0.75fr_1.25fr] md:py-16">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-accent">Strategizing your land purchase</div>
+            <h2 className="mt-3 display text-3xl font-bold text-primary md:text-4xl">Start with the right questions.</h2>
+          </div>
+          <div>
+            <p className="max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
+              Your intended use shapes the location, size, access, and legal checks that matter most. Whether you are planning a home, a commercial development, or a farm, take time to understand the land before you commit.
+            </p>
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              {[
+                ["Define the use", "Residential, commercial, agricultural, or long-term investment."],
+                ["Check the setting", "Consider access, infrastructure, services, and future growth."],
+                ["Do your due diligence", "Confirm title, boundaries, restrictions, and suitability."],
+              ].map(([title, body]) => (
+                <div key={title} className="border-t-2 border-accent/60 pt-3">
+                  <h3 className="text-sm font-semibold text-primary">{title}</h3>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{body}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -205,62 +240,70 @@ function LandPage() {
             <div className="text-sm text-muted-foreground">{(error as Error).message}</div>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-20 text-center">
-            <MapPin className="h-12 w-12 text-muted-foreground/40" />
-            <div className="text-lg font-medium">No land listings found</div>
-            <div className="text-sm text-muted-foreground">{search ? "Try a different search." : "No land available at the moment. Check back soon."}</div>
+          <div className="border border-dashed border-border bg-secondary/25 px-5 py-16 text-center sm:px-10">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent/10">
+              <MapPin className="h-7 w-7 text-accent" />
+            </div>
+            <div className="mt-5 display text-2xl font-bold text-primary">No land listings found</div>
+            <div className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+              {search ? "Try a different location or clear your search to see all available plots." : "New opportunities are added as they are verified. Submit your land and let Habico connect it with qualified buyers."}
+            </div>
+            {search && <Button variant="outline" className="mt-5" onClick={() => setSearch("")}>Clear search</Button>}
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <>
+            <div className="mb-6 flex flex-col gap-2 border-b border-border pb-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <div className="text-xs font-bold uppercase tracking-[0.18em] text-accent">Verified opportunities</div>
+                <h2 className="mt-2 display text-2xl font-bold text-primary md:text-3xl">Available land</h2>
+              </div>
+              <div className="text-sm text-muted-foreground">{filtered.length} {filtered.length === 1 ? "plot" : "plots"} to explore</div>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((p) => (
               <Card
                 key={p.id}
-                className="group cursor-pointer overflow-hidden transition hover:-translate-y-1 hover:shadow-soft"
+                className="group cursor-pointer overflow-hidden border-border/80 bg-card shadow-card transition duration-300 hover:-translate-y-1 hover:border-accent/50 hover:shadow-soft"
                 onClick={() => setSelectedLand(p)}
               >
-                {p.image_url ? (
-                  <img src={p.image_url} alt={p.name} className="h-48 w-full object-cover" />
-                ) : (
-                  <div className="flex h-48 items-center justify-center bg-gradient-to-br from-green-100 to-green-50">
-                    <MapPin className="h-12 w-12 text-green-400/40" />
-                  </div>
-                )}
+                <div className="relative aspect-[16/10] overflow-hidden bg-secondary/50">
+                  {p.image_url ? (
+                    <img src={p.image_url} alt={p.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center bg-gradient-to-br from-secondary to-accent/10">
+                      <MapPin className="h-12 w-12 text-accent/35" />
+                    </div>
+                  )}
+                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/55 to-transparent" />
+                  <span className="absolute left-4 top-4 border border-white/30 bg-primary/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary-foreground">Land</span>
+                  {p.price && <div className="absolute bottom-3 right-3 bg-accent px-3 py-1.5 text-sm font-bold text-accent-foreground">{formatPrice(p.price)}</div>}
+                </div>
                 <CardContent className="p-5">
-                  <div className="flex items-start justify-between">
-                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-                      Land
-                    </span>
-                    {p.price && (
-                      <div className="text-right">
-                        <div className="text-sm font-bold text-foreground">{formatPrice(p.price)}</div>
-                      </div>
-                    )}
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="display min-w-0 text-xl font-bold leading-tight text-primary transition-colors group-hover:text-accent">{p.name}</h3>
                   </div>
-                  <h3 className="mt-3 display text-lg font-bold">{p.name}</h3>
-                  <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                  <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
                     <MapPin className="h-3 w-3" />{p.city ?? p.location ?? p.address ?? "Kampala"}
                   </div>
-                  <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
+                  <div className="mt-4 flex min-h-6 flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     {p.size_sqm && (
-                      <span className="flex items-center gap-1"><Ruler className="h-3 w-3" /> {p.size_sqm.toLocaleString()} sqm</span>
+                      <span className="flex items-center gap-1 border border-border bg-secondary/50 px-2 py-1"><Ruler className="h-3 w-3 text-accent" /> {p.size_sqm.toLocaleString()} sqm</span>
                     )}
-                  </div>
-                  <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
-                    <Lock className="h-3 w-3 text-accent" />
-                    <span>Contact locked — inquire through Habico</span>
+                    <span className="flex items-center gap-1 border border-border bg-secondary/50 px-2 py-1"><Lock className="h-3 w-3 text-accent" /> Contact protected</span>
                   </div>
                   <Button
-                    className="mt-3 w-full"
+                    className="mt-5 w-full justify-between bg-primary text-primary-foreground hover:bg-primary/90"
                     variant="outline"
                     size="sm"
                     onClick={(e) => { e.stopPropagation(); openInquiry(p); }}
                   >
-                    Inquire <Send className="ml-2 h-3 w-3" />
+                    Inquire about this plot <ArrowRight className="ml-2 h-3 w-3 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </CardContent>
               </Card>
             ))}
-          </div>
+            </div>
+          </>
         )}
       </section>
 

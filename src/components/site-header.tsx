@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Menu, MoreHorizontal, User, LogIn, LayoutDashboard, ExternalLink, Download, ChevronDown, Paintbrush, Home, Truck, Wrench, Hammer, ShowerHead, Sparkles, Droplets } from "lucide-react";
+import { Menu, MoreHorizontal, User, LogIn, LayoutDashboard, Download, ChevronDown, Calculator, Wrench, HardHat, ShieldCheck, Receipt } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
@@ -7,14 +7,12 @@ import AppStoreBadges, { getExeDownloadUrl } from "@/components/app-store-badges
 import logoSrc from "@/assets/habico-logo.png";
 
 const services = [
-  { label: "Property Management", to: "/services" as const, icon: Home },
-  { label: "Maintenance & Repairs", to: "/services" as const, icon: Wrench },
-  { label: "Cleaning", to: "/services" as const, icon: Sparkles },
-  { label: "Painting", to: "/services" as const, icon: Paintbrush },
-  { label: "Renovation", to: "/services" as const, icon: Hammer },
-  { label: "Fumigation", to: "/services" as const, icon: ShowerHead },
-  { label: "Plumbing", to: "/services" as const, icon: Droplets },
-  { label: "Moving / Relocation", to: "/book-move" as const, icon: Truck },
+  { id: "construction", label: "Construction Operations", icon: HardHat },
+  { id: "business-development", label: "Business Development", icon: Calculator },
+  { id: "project-management", label: "Project Management", icon: Wrench },
+  { id: "quality-safety", label: "Quality & Safety", icon: ShieldCheck },
+  { id: "team-resources", label: "Teams & Resources", icon: User },
+  { id: "construction-finance", label: "Construction Finance", icon: Receipt },
 ];
 
 export function SiteHeader() {
@@ -29,6 +27,7 @@ export function SiteHeader() {
   const nav = [
     { label: "Properties", to: "/rent" as const },
     { label: "Land", to: "/land" as const },
+    { label: "Construction", to: "/services/construction" as const },
     { label: "Services", to: "/services" as const },
     { label: "Pricing", to: "/pricing" as const },
     { label: "About", to: "/about" as const },
@@ -73,8 +72,9 @@ export function SiteHeader() {
                         <div className="space-y-0.5">
                           {services.map((s) => (
                             <Link
-                              key={s.label}
-                              to={s.to}
+                              key={s.id}
+                              to="/services/$id"
+                              params={{ id: s.id }}
                               onClick={() => setServicesOpen(false)}
                               className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
                             >
@@ -179,6 +179,19 @@ export function SiteHeader() {
                       </Link>
                     ))}
                   </div>
+                );
+              }
+              if (n.label === "Construction") {
+                return (
+                  <Link
+                    key={n.to}
+                    to="/services/$id"
+                    params={{ id: "construction" }}
+                    className="rounded-md px-2 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground xl:px-3"
+                    activeProps={{ className: "bg-muted text-foreground" }}
+                  >
+                    Construction
+                  </Link>
                 );
               }
               if (n.label === "Move Service") return null;
