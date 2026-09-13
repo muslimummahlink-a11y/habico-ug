@@ -13,7 +13,7 @@ import { SiteHeader } from "@/components/site-header";
 import { VisitAdPopup } from "@/components/visit-ad-popup";
 import { PropertyReviews } from "@/components/property-reviews";
 import { toast } from "sonner";
-import landBanner from "@/assets/land-banner.jpg";
+import landBanner from "@/assets/hero-residence.jpg";
 import {
   MapPin, Search, SlidersHorizontal, ArrowRight, Loader2,
   Phone, Mail, MessageSquare, Ruler, Lock, Send, BadgePlus,

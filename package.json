@@ -3,7 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "description": "Habico Property Managers Portal",
-  "author": "Habico Property Managers",
+  "author": "TENNAHUB TECHNOLOGIES LTD",
+  "license": "UNLICENSED",
   "sideEffects": false,
   "type": "module",
   "scripts": {

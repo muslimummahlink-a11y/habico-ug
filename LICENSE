@@ -1,0 +1,27 @@
+Proprietary Software License
+
+Copyright (c) 2026 TENNAHUB TECHNOLOGIES LTD. All rights reserved.
+
+1. Ownership
+
+TENNAHUB TECHNOLOGIES LTD (the "Owner") owns the Habico Property Managers software, including its source code, compiled releases, visual assets, documentation, database migrations, configuration, and associated materials (the "Software").
+
+2. Restricted rights
+
+Except for a separate written agreement signed by the Owner, no person or organization may copy, modify, adapt, merge, publish, distribute, sublicense, sell, lease, lend, reverse engineer, decompile, create derivative works from, or commercially exploit the Software or any substantial part of it.
+
+Access to this repository does not grant a license to use the Software. It grants no ownership interest and no permission to make core changes, create releases, alter database migrations, change authentication or licensing logic, or redistribute the Software.
+
+3. Authorized changes
+
+Only the Owner or a person expressly authorized in writing by the Owner may approve changes to core application code, database migrations, authentication, licensing, payments, deployment configuration, release assets, or other protected project areas.
+
+4. No warranty
+
+The Software is provided without warranty of any kind, to the maximum extent permitted by applicable law. The Owner is not liable for claims or damages arising from unauthorized access, use, modification, or distribution.
+
+5. Reservation of rights
+
+All rights not expressly granted in writing are reserved by TENNAHUB TECHNOLOGIES LTD.
+
+This license is not an open-source license.
